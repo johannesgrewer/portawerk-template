@@ -1,51 +1,59 @@
 # PRB: [FIRMENNAME]
 
+> **Legende:**
+> `[INTAKE]` = direkt aus dem Formular · `[KI]` = von KI abgeleitet · `[OFFEN]` = noch zu klären
+
+---
+
 ## Projekt-Übersicht
-- **Kunde:** [Name]
-- **Ansprechpartner:** [Kontaktperson] ([E-Mail])
-- **Branche:** [Branche]
-- **Standort:** [Stadt/Region]
-- **Zielgruppe:** [Beschreibung]
-- **Website-Ziel:** [Hauptziel]
-- **Gewünschte Aktionen:** [Was sollen Besucher tun?]
 
-## Design-Richtung
-- **Stimmung:** [z.B. Modern & clean / Warm & einladend / Bodenständig]
-- **Referenz-Websites:** [Links, falls angegeben]
-- **Referenz-Feedback:** [Was gefällt dem Kunden daran?]
-- **Logo:** [Vorhanden ja/nein, Format]
-- **Farbvorgaben:** [Falls vorhanden]
-- **Farb-Ausschlüsse:** [Falls angegeben]
+- **Kunde:** [INTAKE] [Firmenname]
+- **Ansprechpartner:** [INTAKE] [Name] · [E-Mail] · [Telefon]
+- **Branche:** [INTAKE] [Branche]
+- **Standort:** [INTAKE] [Stadt/Region]
+- **Beschreibung:** [INTAKE] [Unternehmensbeschreibung]
+- **Seit:** [INTAKE] [Jahr]
+- **Leistungen:** [INTAKE] [Leistungsliste]
 
-## Farbpalette
-| Rolle          | Name    | Hex       |
-|----------------|---------|-----------|
-| Primary        |         | #________ |
-| Primary Light  |         | #________ |
-| Accent (CTA)   |         | #________ |
-| Accent Hover   |         | #________ |
-| Background     |         | #________ |
-| Surface        |         | #________ |
-| Surface Alt    |         | #________ |
-| Text Primary   |         | #________ |
-| Text Muted     |         | #________ |
-| Border         |         | #________ |
+## Projekt-Ziel (KI-abgeleitet — zur Bestätigung)
 
-> Palette abgeleitet aus: [Kundenvorgaben / Logo / Branche + Stimmung]
+- **Website-Ziel:** [KI] [z.B. "Mehr Kundenanfragen generieren"]
+- **Zielgruppe:** [KI] [z.B. "Hausbesitzer in Trier und Umgebung, 35–65 Jahre"]
+- **Gewünschte Aktionen:** [KI] [z.B. "Anrufen, Kontaktformular ausfüllen"]
 
-## Typografie
-| Element | Font           | Gewicht | Größe (clamp)               |
-|---------|----------------|---------|-----------------------------|
-| H1      | [Display Font] | 700     | clamp(2.25rem, 5vw, 3.5rem) |
-| H2      | [Display Font] | 600     | clamp(1.875rem, 4vw, 2.5rem)|
-| Body    | [Body Font]    | 400     | clamp(1rem, 0.5vw, 1.125rem)|
-| Button  | [Body Font]    | 600     | 1rem                        |
+## Design-Richtung (KI-abgeleitet — zur Bestätigung)
 
-- **Display Font:** [Name] — [Charakter/Stil]
-- **Body Font:** [Name] — [Charakter/Stil]
-- **Font-Pairing Begründung:** [Warum passt diese Kombination zur Stimmung?]
+- **Stimmung:** [KI] [z.B. "Bodenständig & vertrauensvoll — klassischer Handwerksbetrieb"]
+- **Begründung:** [KI] [Warum diese Stimmung? Aus Branche/Beschreibung abgeleitet]
+- **Farbvorgaben vom Kunden:** [INTAKE] [Hex, Farbnamen oder leer]
+- **Logo vorhanden:** [INTAKE] Ja / Nein
+- **Bilder vorhanden:** [INTAKE] Professionell / Handy / Keine
+
+## Farbpalette (KI-abgeleitet — zur Bestätigung)
+
+| Rolle          | Name    | Hex       | Quelle |
+|----------------|---------|-----------|--------|
+| Primary        |         | #________ | [KI / INTAKE] |
+| Primary Light  |         | #________ | [KI] |
+| Accent (CTA)   |         | #________ | [KI] |
+| Accent Hover   |         | #________ | [KI] |
+| Background     |         | #________ | [KI] |
+| Surface        |         | #________ | [KI] |
+| Surface Alt    |         | #________ | [KI] |
+| Text Primary   |         | #________ | [KI] |
+| Text Muted     |         | #________ | [KI] |
+| Border         |         | #________ | [KI] |
+
+> Palette abgeleitet aus: [Logo / Branche + Stimmung / Kundenvorgabe]
+
+## Typografie (KI-abgeleitet — zur Bestätigung)
+
+- **Display Font:** [KI] [Name] — [warum diese Wahl]
+- **Body Font:** [KI] [Name] — [warum diese Wahl]
+- **Pairing-Begründung:** [KI] [Passt zur Stimmung weil...]
 
 ## Sektionen
+
 1. [ ] Header
 2. [ ] Hero
 3. [ ] SocialProof
@@ -61,30 +69,34 @@
 13. [ ] Datenschutz
 14. [ ] 404
 
-## Features
-- [ ] Kontaktformular
-- [ ] Google Maps (2-Klick)
-- [ ] Bildergalerie
-- [ ] FAQ-Bereich
-- [ ] Testimonials
+## Content
 
-## Vorhandene Assets
-- **Logo:** [ja/nein, Format]
-- **Texte:** [komplett / teilweise / keine]
-- **Bilder:** [professionell / handy / keine]
+- **Über uns:** [INTAKE] [Text aus Formular oder leer → KI schreibt]
+- **Sonstiges vom Kunden:** [INTAKE] [Freitext aus Formular]
+
+## Assets
+
+- **Logo:** [INTAKE] Ja / Nein — Format: [Format]
+- **Bilder:** [INTAKE] Professionell / Handy / Keine
+- **Texte:** [INTAKE] Komplett / Teilweise / KI schreibt alles
 
 ## Domain
-- **Status:** [vorhanden / wird registriert / unklar]
-- **Domain:** [URL oder Wunsch]
+
+- **Status:** [INTAKE] Vorhanden / Wird registriert / Keine
+- **Domain:** [INTAKE] [URL oder Wunsch]
 
 ## Kontaktdaten (für Impressum + JSON-LD)
-- **Firmenname:**
-- **Inhaber:**
-- **Straße:**
-- **PLZ + Stadt:**
-- **Telefon:**
-- **E-Mail:**
-- **USt-ID:** [vorhanden / nicht vorhanden]
+
+- **Firmenname:** [INTAKE]
+- **Inhaber:** [INTAKE] [Name]
+- **Straße:** [OFFEN — im Gespräch klären]
+- **PLZ + Stadt:** [INTAKE] [aus Standort]
+- **Telefon:** [INTAKE]
+- **E-Mail:** [INTAKE]
+- **USt-ID:** [OFFEN — im Gespräch klären]
 
 ## Offene Punkte
-- [ ] [Was noch geklärt werden muss]
+
+- [ ] Kunde bestätigt KI-abgeleitete Felder (Ziel, Zielgruppe, Stimmung, Farben)
+- [ ] Adresse + USt-ID klären
+- [ ] [Weitere offene Punkte]
