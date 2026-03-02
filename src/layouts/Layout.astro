@@ -1,0 +1,121 @@
+---
+import "../styles/globals.css";
+import SkipToContent from "../components/SkipToContent.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  ogImage?: string;
+}
+
+const {
+  title = "[FIRMENNAME] | [HAUPTLEISTUNG] in [STADT]", // TODO: anpassen
+  description = "[FIRMENNAME] — [KURZBESCHREIBUNG]. [CTA]", // TODO: anpassen
+  canonical = Astro.url.href,
+  ogImage = "/og-image.jpg",
+} = Astro.props;
+
+const siteUrl = "https://[DOMAIN]"; // TODO: Kundendomain eintragen
+const siteName = "[FIRMENNAME]"; // TODO: anpassen
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:site_name" content={siteName} />
+
+    <!-- Font Preloads (self-hosted, DSGVO-konform) -->
+    <!-- TODO: Pfade auf die gewählten Fonts anpassen -->
+    <link
+      rel="preload"
+      href="/fonts/[display-font]/[display-font]-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/[body-font]/[body-font]-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!-- Umami Analytics (self-hosted, DSGVO-konform, kein Cookie) -->
+    <!-- TODO: data-website-id aus Umami Dashboard eintragen -->
+    <script defer src="https://analytics.z-up.studio/script.js" data-website-id="[UMAMI-WEBSITE-ID]"></script>
+
+    <title>{title}</title>
+
+    <!-- Schema.org LocalBusiness JSON-LD -->
+    <!-- TODO: Alle Felder mit Kundendaten befüllen -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness", // TODO: präziserer Typ je nach Branche (z.B. "Plumber", "Restaurant", "BeautySalon")
+      "name": siteName,
+      "description": description,
+      "url": siteUrl,
+      "telephone": "[TELEFON]",
+      "email": "[EMAIL]",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "[STRASSE]",
+        "addressLocality": "[STADT]",
+        "postalCode": "[PLZ]",
+        "addressRegion": "[BUNDESLAND]",
+        "addressCountry": "DE"
+      },
+      "image": `${siteUrl}/og-image.jpg`
+    })} />
+  </head>
+
+  <body>
+    <SkipToContent />
+    <slot />
+
+    <!-- Lenis Smooth Scroll -->
+    <script is:inline>
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        import('/lenis.mjs').then(({ default: Lenis }) => {
+          const lenis = new Lenis({ lerp: 0.11 });
+          function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+          requestAnimationFrame(raf);
+        });
+      }
+    </script>
+
+    <!-- IntersectionObserver für Scroll-Animationen -->
+    <script>
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>

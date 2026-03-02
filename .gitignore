@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.astro/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# System
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel/
+
+# Ressourcen (Rohdateien vom Kunden — nur lokal)
+resources/
+
+# Screenshots
+screenshots/

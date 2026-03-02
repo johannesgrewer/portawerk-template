@@ -1,0 +1,181 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+// TODO: Datum aktualisieren
+const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+---
+
+<Layout
+  title="Datenschutz | [FIRMENNAME]"
+  description="Datenschutzerklärung von [FIRMENNAME]."
+>
+  <Header />
+  <main id="main-content" class="legal-page">
+    <div class="container container-narrow legal-content">
+      <h1>Datenschutzerkl&auml;rung</h1>
+
+      <h2>1. Verantwortlicher</h2>
+      <p>
+        [KUNDE.INHABER]<br/>
+        [KUNDE.FIRMENNAME]<br/>
+        [KUNDE.STRASSE], [KUNDE.PLZ] [KUNDE.STADT]<br/>
+        E-Mail: <a href="mailto:[KUNDE.EMAIL]">[KUNDE.EMAIL]</a><br/>
+        Telefon: <a href="tel:+49[TELEFON-ZIFFERN]">[KUNDE.TELEFON]</a>
+      </p>
+
+      <h2>2. Allgemeines zur Datenverarbeitung</h2>
+      <p>
+        Wir nehmen den Schutz Ihrer pers&ouml;nlichen Daten ernst. Diese Datenschutzerkl&auml;rung
+        informiert Sie &uuml;ber Art, Umfang und Zweck der Verarbeitung personenbezogener Daten auf
+        dieser Website.
+      </p>
+
+      <h2>3. Hosting</h2>
+      <p>
+        Diese Website wird bei <strong>Vercel Inc.</strong> gehostet. Beim Aufruf werden automatisch
+        Informationen in Server-Log-Files erfasst (IP-Adresse, Browsertyp, Betriebssystem, Referrer-URL,
+        Uhrzeit). Vercel betreibt ein globales Edge-Network; Anfragen aus der EU werden bevorzugt &uuml;ber
+        europ&auml;ische Server verarbeitet.
+      </p>
+      <p>
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an zuverl&auml;ssiger
+        Darstellung der Website). Ein Auftragsverarbeitungsvertrag mit Vercel liegt vor.<br/>
+        <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">
+          Datenschutzerkl&auml;rung Vercel
+        </a>
+      </p>
+
+      <h2>4. SSL-/TLS-Verschl&uuml;sselung</h2>
+      <p>
+        Diese Website nutzt aus Sicherheitsgr&uuml;nden SSL- bzw. TLS-Verschl&uuml;sselung.
+        Eine verschl&uuml;sselte Verbindung erkennen Sie am Schloss-Symbol in der Adresszeile.
+      </p>
+
+      <h2>5. Kontaktformular</h2>
+      <p>
+        Wenn Sie uns &uuml;ber das Kontaktformular kontaktieren, werden Ihre Angaben (Name, E-Mail-Adresse,
+        Nachricht) zur Bearbeitung Ihrer Anfrage gespeichert und nicht ohne Ihre Einwilligung weitergegeben.
+      </p>
+      <p>
+        Formularverarbeitung: <strong>Supabase</strong> (supabase.com, Region Frankfurt, EU) &mdash; Daten
+        werden &uuml;ber eine Supabase Edge Function verarbeitet und in einer Datenbank gespeichert.<br/>
+        E-Mail-Benachrichtigung: <strong>Resend</strong> (resend.com). Auftragsverarbeitungsvertr&auml;ge
+        liegen vor.<br/>
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+      </p>
+
+      <!-- Nur einbauen wenn Website-Analytics aktiv: -->
+      <!--
+      <h2>6. Website-Analyse (Umami)</h2>
+      <p>
+        Diese Website verwendet Umami, ein datenschutzfreundliches, selbst gehostetes Analyse-Tool.
+        Umami setzt keine Cookies und erhebt keine personenbezogenen Daten. Erfasst werden ausschließlich
+        Seitenaufrufe, Verweildauer, Referrer, Browser/OS und Land (ohne genauen Standort). Es werden
+        keine IP-Adressen oder gerätespezifische Kennungen gespeichert.
+      </p>
+      <p>
+        Server-Standort: Deutschland (Hetzner Online GmbH).<br/>
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).
+      </p>
+      -->
+
+      <!-- Nur bei 2-Klick Google Maps: -->
+      <!--
+      <h2>6. Google Maps</h2>
+      <p>
+        Auf dieser Website wird Google Maps eingebunden. Die Karte wird erst nach Ihrer aktiven
+        Einwilligung geladen (2-Klick-Lösung). Erst wenn Sie auf "Karte laden" klicken, werden
+        Daten an Google übertragen.
+      </p>
+      <p>
+        Anbieter: Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland.<br/>
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).
+      </p>
+      -->
+
+      <h2>6. Schriftarten</h2>
+      <p>
+        Alle Schriftarten werden selbst gehostet und nicht von externen Servern (wie Google Fonts)
+        geladen. Es erfolgt keine Daten&uuml;bermittlung an Dritte durch das Laden von Schriftarten.
+      </p>
+
+      <h2>7. Cookies &amp; Tracking</h2>
+      <p>
+        <strong>Diese Website verwendet keine Tracking-Cookies.</strong> Es werden keine Analyse-Tools
+        wie Google Analytics eingesetzt. Kein Cookie-Banner erforderlich.
+      </p>
+
+      <h2>8. Ihre Rechte</h2>
+      <p>Sie haben das Recht auf:</p>
+      <p>
+        Auskunft (Art. 15 DSGVO) &middot; Berichtigung (Art. 16) &middot; L&ouml;schung (Art. 17) &middot;
+        Einschr&auml;nkung (Art. 18) &middot; Daten&uuml;bertragbarkeit (Art. 20) &middot;
+        Widerspruch (Art. 21 DSGVO)
+      </p>
+      <p>
+        Zur Aus&uuml;bung Ihrer Rechte wenden Sie sich an:
+        <a href="mailto:[KUNDE.EMAIL]">[KUNDE.EMAIL]</a>
+      </p>
+
+      <h2>9. Beschwerderecht</h2>
+      <p>
+        Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbeh&ouml;rde zu beschweren.<br/>
+        <!-- TODO: Bundesland des Kunden prüfen, ggf. andere Behörde eintragen -->
+        Zust&auml;ndige Beh&ouml;rde (Rheinland-Pfalz):<br/>
+        Der Landesbeauftragte f&uuml;r den Datenschutz und die Informationsfreiheit Rheinland-Pfalz<br/>
+        Hintere Bleiche 34, 55116 Mainz &middot;
+        <a href="https://www.datenschutz.rlp.de" target="_blank" rel="noopener noreferrer">
+          www.datenschutz.rlp.de
+        </a>
+      </p>
+
+      <p class="legal-updated">Stand: {stand}</p>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .legal-page {
+    padding-top: calc(64px + var(--space-2xl));
+    padding-bottom: var(--space-2xl);
+    background: var(--c-bg);
+  }
+
+  .legal-content h1 { margin-bottom: var(--space-xl); }
+
+  .legal-content h2 {
+    font-size: var(--fs-h3);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-sm);
+  }
+
+  .legal-content h3 {
+    font-size: var(--fs-h4);
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-xs);
+  }
+
+  .legal-content p {
+    color: var(--c-text-muted);
+    line-height: var(--lh-relaxed);
+    margin-bottom: var(--space-md);
+  }
+
+  .legal-content a {
+    color: var(--c-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .legal-content a:hover { color: var(--c-primary-light); }
+
+  .legal-updated {
+    margin-top: var(--space-2xl);
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+    font-style: italic;
+  }
+</style>

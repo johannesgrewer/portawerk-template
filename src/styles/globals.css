@@ -1,0 +1,403 @@
+/* ═══════════════════════════════════════════════════════
+   PortaWerk Template — globals.css
+   Single Source of Truth for Design Tokens
+   ───────────────────────────────────────────────────────
+   TODO: Fonts + Farben pro Kunde anpassen.
+         Alle anderen Abschnitte (Reset, Utilities, etc.)
+         bleiben unverändert.
+   ═══════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+
+/* ── Self-Hosted Fonts (DSGVO-konform, kein Google CDN) ── */
+/* TODO: Fontnamen + Pfade auf gewählte Fonts anpassen     */
+
+@font-face {
+  font-family: '[DISPLAY-FONT]';
+  src: url('/fonts/[display-font]/[display-font]-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: '[BODY-FONT]';
+  src: url('/fonts/[body-font]/[body-font]-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: '[BODY-FONT]';
+  src: url('/fonts/[body-font]/[body-font]-latin-wght-italic.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ── Tailwind Theme Tokens ── */
+/* TODO: Farben + Fonts aus PRB eintragen */
+
+@theme {
+  /* Colors */
+  --color-primary:       #______; /* TODO */
+  --color-primary-light: #______; /* TODO: etwas heller als primary */
+  --color-accent:        #______; /* TODO: CTA-Farbe, kontrastreich */
+  --color-accent-hover:  #______; /* TODO: etwas dunkler als accent */
+  --color-bg:            #______; /* TODO: Seitenhintergrund */
+  --color-surface:       #______; /* TODO: Card-Hintergrund */
+  --color-surface-alt:   #______; /* TODO: etwas dunkler als surface */
+  --color-text:          #______; /* TODO: Fließtext */
+  --color-text-muted:    #______; /* TODO: Sekundärtext */
+  --color-border:        #______; /* TODO: Trennlinien, Rahmen */
+  --color-white:         #FFFFFF;
+
+  /* Fonts */
+  --font-display: '[DISPLAY-FONT]', Georgia, serif; /* TODO */
+  --font-body:    '[BODY-FONT]', system-ui, sans-serif; /* TODO */
+}
+
+/* ── CSS Custom Properties (non-Tailwind) ── */
+
+:root {
+  /* ─ Colors (spiegeln @theme) ─ */
+  --c-primary:       #______; /* TODO */
+  --c-primary-light: #______; /* TODO */
+  --c-accent:        #______; /* TODO */
+  --c-accent-hover:  #______; /* TODO */
+  --c-bg:            #______; /* TODO */
+  --c-surface:       #______; /* TODO */
+  --c-surface-alt:   #______; /* TODO */
+  --c-text:          #______; /* TODO */
+  --c-text-muted:    #______; /* TODO */
+  --c-border:        #______; /* TODO */
+  --c-white:         #FFFFFF;
+  --c-star:          #F59E0B;
+
+  /* ─ Typography ─ */
+  --font-display: '[DISPLAY-FONT]', Georgia, serif; /* TODO */
+  --font-body:    '[BODY-FONT]', system-ui, sans-serif; /* TODO */
+
+  --fs-h1: clamp(2.25rem, 5vw + 1rem, 3.5rem);
+  --fs-h2: clamp(1.875rem, 4vw + 0.5rem, 2.5rem);
+  --fs-h3: clamp(1.5rem, 3vw + 0.5rem, 1.875rem);
+  --fs-h4: clamp(1.25rem, 2vw + 0.5rem, 1.5rem);
+  --fs-body: clamp(1rem, 0.5vw + 0.875rem, 1.125rem);
+  --fs-small: clamp(0.875rem, 0.3vw + 0.8rem, 1rem);
+  --fs-xs: clamp(0.75rem, 0.2vw + 0.7rem, 0.875rem);
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-normal: 1.6;
+  --lh-relaxed: 1.75;
+
+  /* ─ Spacing (fluid) ─ */
+  --space-xs:  clamp(0.25rem, 0.5vw, 0.5rem);
+  --space-sm:  clamp(0.5rem, 1vw, 0.75rem);
+  --space-md:  clamp(1rem, 2vw, 1.5rem);
+  --space-lg:  clamp(1.5rem, 3vw, 2.5rem);
+  --space-xl:  clamp(2rem, 4vw, 3.5rem);
+  --space-2xl: clamp(3rem, 6vw, 5rem);
+  --space-3xl: clamp(4rem, 8vw, 7rem);
+
+  /* ─ Section spacing ─ */
+  --section-py: clamp(4rem, 8vw, 7rem);
+  --section-px: clamp(1.25rem, 3vw, 2rem);
+
+  /* ─ Container ─ */
+  --container-max:    1200px;
+  --container-narrow: 800px;
+  --container-wide:   1400px;
+
+  /* ─ Radii ─ */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* ─ Shadows ─ */
+  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md:     0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg:     0 12px 32px rgba(0, 0, 0, 0.1);
+  --shadow-xl:     0 20px 50px rgba(0, 0, 0, 0.12);
+  --shadow-accent: 0 8px 24px rgba(0, 0, 0, 0.15); /* TODO: Accent-Farbe einsetzen */
+
+  /* ─ Transitions ─ */
+  --ease-out:       cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth:    cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast:   150ms;
+  --duration-normal: 300ms;
+  --duration-slow:   500ms;
+}
+
+/* ── Breakpoints (Referenz) ──
+   640px  — große Phones / kleine Tablets
+   768px  — Tablets
+   1024px — Laptops
+   1280px — Desktops
+   1536px — Ultrawide (1920px @ 125% Scaling)
+── */
+
+/* ══════════════════════════
+   RESET & BASE
+   ══════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--c-text);
+  background-color: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ══════════════════════════
+   TYPOGRAPHY
+   ══════════════════════════ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+  color: var(--c-text);
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--fs-h1); font-weight: 700; }
+h2 { font-size: var(--fs-h2); font-weight: 600; }
+h3 { font-size: var(--fs-h3); font-weight: 600; }
+h4 { font-size: var(--fs-h4); font-weight: 600; }
+
+p {
+  max-width: 70ch;
+  line-height: var(--lh-normal);
+}
+
+::selection {
+  background-color: var(--c-primary);
+  color: var(--c-white);
+}
+
+/* ══════════════════════════
+   CONTAINER & SECTIONS
+   ══════════════════════════ */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--section-px);
+  padding-right: var(--section-px);
+}
+
+.container-narrow { max-width: var(--container-narrow); }
+.container-wide   { max-width: var(--container-wide); }
+
+.section {
+  padding-top: var(--section-py);
+  padding-bottom: var(--section-py);
+}
+
+/* ══════════════════════════
+   BUTTONS
+   ══════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-smooth);
+  white-space: nowrap;
+  text-decoration: none;
+  min-height: 48px;
+}
+
+/* Primary Button — Accent CTA */
+.btn-primary {
+  background-color: var(--c-accent);
+  color: var(--c-white);
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover {
+  background-color: var(--c-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-accent);
+}
+.btn-primary:active { transform: translateY(0); }
+
+/* Secondary Button — Outlined */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--c-primary);
+  border: 2px solid var(--c-primary);
+}
+.btn-secondary:hover {
+  background-color: var(--c-primary);
+  color: var(--c-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Ghost Button — Text only */
+.btn-ghost {
+  background: transparent;
+  color: var(--c-text-muted);
+  padding: 0.5rem 1rem;
+}
+.btn-ghost:hover { color: var(--c-primary); }
+
+/* Full-width on mobile */
+@media (max-width: 639px) {
+  .btn-block-mobile { width: 100%; }
+}
+
+/* ══════════════════════════
+   ACCESSIBILITY
+   ══════════════════════════ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--c-primary-light);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ══════════════════════════
+   SECTION BADGE
+   ══════════════════════════ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--c-border);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--c-primary);
+  background: var(--c-white);
+  margin-bottom: var(--space-md);
+}
+
+/* ══════════════════════════
+   SCROLL ANIMATIONS
+   ══════════════════════════ */
+
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s var(--ease-out),
+              transform 0.6s var(--ease-out);
+}
+.animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.animate-on-scroll:nth-child(2) { transition-delay: 0.1s; }
+.animate-on-scroll:nth-child(3) { transition-delay: 0.2s; }
+.animate-on-scroll:nth-child(4) { transition-delay: 0.3s; }
+.animate-on-scroll:nth-child(5) { transition-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-on-scroll { opacity: 1; transform: none; transition: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ══════════════════════════
+   FAQ ACCORDION
+   ══════════════════════════ */
+
+.faq-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s var(--ease-out);
+}
+.faq-content.open { max-height: 500px; }
+
+/* ══════════════════════════
+   CARD HOVER
+   ══════════════════════════ */
+
+.card-hover {
+  transition: transform var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out);
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ══════════════════════════
+   UTILITIES
+   ══════════════════════════ */
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-surface          { background-color: var(--c-surface); }
+.bg-primary-gradient { background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-primary-light) 100%); }
