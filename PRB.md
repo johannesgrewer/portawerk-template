@@ -1,56 +1,54 @@
 # PRB: [FIRMENNAME]
 
-> **Legende:**
-> `[INTAKE]` = direkt aus dem Formular · `[KI]` = von KI abgeleitet · `[OFFEN]` = noch zu klären
+*Erstellt von PortaWerk auf Basis Ihrer Anfrage. Bitte kurz prüfen und bestätigen.*
 
 ---
 
 ## Projekt-Übersicht
 
-- **Kunde:** [INTAKE] [Firmenname]
-- **Ansprechpartner:** [INTAKE] [Name] · [E-Mail] · [Telefon]
-- **Branche:** [INTAKE] [Branche]
-- **Standort:** [INTAKE] [Stadt/Region]
-- **Beschreibung:** [INTAKE] [Unternehmensbeschreibung]
-- **Seit:** [INTAKE] [Jahr]
-- **Leistungen:** [INTAKE] [Leistungsliste]
+- **Kunde:** [Firmenname]
+- **Ansprechpartner:** [Name] · [E-Mail] · [Telefon]
+- **Branche:** [Branche]
+- **Standort:** [Stadt/Region]
+- **Beschreibung:** [Unternehmensbeschreibung]
+- **Seit:** [Jahr]
+- **Leistungen:** [Leistungsliste]
 
-## Projekt-Ziel (KI-abgeleitet — zur Bestätigung)
+## Projekt-Ziel
 
-- **Website-Ziel:** [KI] [z.B. "Mehr Kundenanfragen generieren"]
-- **Zielgruppe:** [KI] [z.B. "Hausbesitzer in Trier und Umgebung, 35–65 Jahre"]
-- **Gewünschte Aktionen:** [KI] [z.B. "Anrufen, Kontaktformular ausfüllen"]
+- **Website-Ziel:** [z.B. "Mehr Kundenanfragen generieren"]
+- **Zielgruppe:** [z.B. "Hausbesitzer in Trier und Umgebung, 35–65 Jahre"]
+- **Gewünschte Aktionen:** [z.B. "Anrufen, Kontaktformular ausfüllen"]
 
-## Design-Richtung (KI-abgeleitet — zur Bestätigung)
+## Design-Richtung
 
-- **Stimmung:** [KI] [z.B. "Bodenständig & vertrauensvoll — klassischer Handwerksbetrieb"]
-- **Begründung:** [KI] [Warum diese Stimmung? Aus Branche/Beschreibung abgeleitet]
-- **Farbvorgaben vom Kunden:** [INTAKE] [Hex, Farbnamen oder leer]
-- **Logo vorhanden:** [INTAKE] Ja / Nein
-- **Bilder vorhanden:** [INTAKE] Professionell / Handy / Keine
+- **Stimmung:** [z.B. "Bodenständig & vertrauensvoll"]
+- **Begründung:** [Kurze Erklärung warum diese Richtung passt]
+- **Farbvorgaben:** [Kundenvorgabe oder "keine Vorgabe"]
+- **Logo vorhanden:** Ja / Nein
+- **Bilder vorhanden:** Professionell / Handy / Keine
 
-## Farbpalette (KI-abgeleitet — zur Bestätigung)
+## Farbpalette
 
-| Rolle          | Name    | Hex       | Quelle |
-|----------------|---------|-----------|--------|
-| Primary        |         | #________ | [KI / INTAKE] |
-| Primary Light  |         | #________ | [KI] |
-| Accent (CTA)   |         | #________ | [KI] |
-| Accent Hover   |         | #________ | [KI] |
-| Background     |         | #________ | [KI] |
-| Surface        |         | #________ | [KI] |
-| Surface Alt    |         | #________ | [KI] |
-| Text Primary   |         | #________ | [KI] |
-| Text Muted     |         | #________ | [KI] |
-| Border         |         | #________ | [KI] |
+| Rolle          | Name    | Hex       |
+|----------------|---------|-----------|
+| Primary        |         | #________ |
+| Primary Light  |         | #________ |
+| Accent (CTA)   |         | #________ |
+| Accent Hover   |         | #________ |
+| Background     |         | #________ |
+| Surface        |         | #________ |
+| Surface Alt    |         | #________ |
+| Text Primary   |         | #________ |
+| Text Muted     |         | #________ |
+| Border         |         | #________ |
 
 > Palette abgeleitet aus: [Logo / Branche + Stimmung / Kundenvorgabe]
 
-## Typografie (KI-abgeleitet — zur Bestätigung)
+## Typografie
 
-- **Display Font:** [KI] [Name] — [warum diese Wahl]
-- **Body Font:** [KI] [Name] — [warum diese Wahl]
-- **Pairing-Begründung:** [KI] [Passt zur Stimmung weil...]
+- **Display Font:** [Name] — [warum diese Wahl]
+- **Body Font:** [Name] — [warum diese Wahl]
 
 ## Sektionen
 
@@ -71,32 +69,32 @@
 
 ## Content
 
-- **Über uns:** [INTAKE] [Text aus Formular oder leer → KI schreibt]
-- **Sonstiges vom Kunden:** [INTAKE] [Freitext aus Formular]
+- **Über uns:** [Text aus Formular oder "wird von PortaWerk erstellt"]
+- **Sonstiges:** [Freitext aus Formular]
 
 ## Assets
 
-- **Logo:** [INTAKE] Ja / Nein — Format: [Format]
-- **Bilder:** [INTAKE] Professionell / Handy / Keine
-- **Texte:** [INTAKE] Komplett / Teilweise / KI schreibt alles
+- **Logo:** Ja / Nein — Format: [Format]
+- **Bilder:** Professionell / Handy / Keine
+- **Texte:** Komplett / Teilweise / PortaWerk erstellt alles
 
 ## Domain
 
-- **Status:** [INTAKE] Vorhanden / Wird registriert / Keine
-- **Domain:** [INTAKE] [URL oder Wunsch]
+- **Status:** Vorhanden / Wird registriert / Keine
+- **Domain:** [URL oder Wunsch]
 
-## Kontaktdaten (für Impressum + JSON-LD)
+## Kontaktdaten (Impressum + JSON-LD)
 
-- **Firmenname:** [INTAKE]
-- **Inhaber:** [INTAKE] [Name]
-- **Straße:** [OFFEN — im Gespräch klären]
-- **PLZ + Stadt:** [INTAKE] [aus Standort]
-- **Telefon:** [INTAKE]
-- **E-Mail:** [INTAKE]
-- **USt-ID:** [OFFEN — im Gespräch klären]
+- **Firmenname:** [Name]
+- **Inhaber:** [Name]
+- **Straße:** [OFFEN]
+- **PLZ + Stadt:** [aus Standort]
+- **Telefon:** [Nummer]
+- **E-Mail:** [E-Mail]
+- **USt-ID:** [OFFEN]
 
 ## Offene Punkte
 
-- [ ] Kunde bestätigt KI-abgeleitete Felder (Ziel, Zielgruppe, Stimmung, Farben)
+- [ ] Kunde bestätigt Ziel, Zielgruppe und Design-Richtung
 - [ ] Adresse + USt-ID klären
 - [ ] [Weitere offene Punkte]
