@@ -1,0 +1,45 @@
+---
+/**
+ * danke.astro — Bestaetigungsseite nach dem Formularversand.
+ * noindex, damit sie nicht in der Suche landet.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site';
+---
+<BaseLayout
+  title={`Danke | ${site.name}`}
+  description="Ihre Nachricht ist angekommen."
+  noindex={true}
+>
+  <Header />
+  <main id="main-content" class="danke-page">
+    <div class="danke-content">
+      <span class="danke-icon" aria-hidden="true">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      </span>
+      <h1>Vielen Dank!</h1>
+      <p>Ihre Nachricht ist bei uns angekommen. Wir melden uns so schnell wie moeglich bei Ihnen.</p>
+      <a href="/" class="btn btn-primary">Zurueck zur Startseite</a>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .danke-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(64px + var(--space-2xl)) var(--section-px) var(--space-2xl);
+  }
+  .danke-content { text-align: center; max-width: 520px; }
+  .danke-icon { color: var(--c-primary); display: inline-flex; margin-bottom: var(--space-md); }
+  .danke-content h1 { margin-bottom: var(--space-sm); }
+  .danke-content p { color: var(--c-text-muted); margin: 0 auto var(--space-lg); }
+</style>

@@ -1,0 +1,20 @@
+# Cloudflare Pages — Security Headers + CSP
+# Gilt fuer alle Pfade. Pro Projekt anpassen: siehe TODOs in der CSP.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://analytics.z-up.studio https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://analytics.z-up.studio https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+# ── Pro Projekt ergaenzen ──────────────────────────────────────────────
+# 1) Kontaktformular: die Form-Worker-Origin an connect-src UND form-action
+#    anhaengen, sonst blockiert die CSP den Formular-POST. Beispiel:
+#      connect-src 'self' https://analytics.z-up.studio https://form-worker.xxx.workers.dev
+#      form-action 'self' https://form-worker.xxx.workers.dev
+#
+# 2) Nur wenn TwoClickEmbed genutzt wird, die Embed-Hosts ergaenzen:
+#    Google Maps:  frame-src https://www.google.com ;  img-src ... https://maps.gstatic.com
+#    YouTube:      frame-src https://www.youtube-nocookie.com

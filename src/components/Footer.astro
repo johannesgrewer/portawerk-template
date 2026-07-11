@@ -1,0 +1,128 @@
+---
+/**
+ * Footer.astro — Kontakt, Pflicht-Links, Attribution.
+ * Zieht Kundendaten aus site.ts. Auf JEDER Seite eingebunden.
+ * WCAG-sicher: heller Footer (surface-alt) + --c-text, theme-robust.
+ */
+import { site } from '../config/site';
+
+interface FooterLink { label: string; href: string; }
+interface Props {
+  links?: FooterLink[];   // rechtliche Links; Default Impressum + Datenschutz
+  showSocials?: boolean;
+}
+
+const {
+  links = [
+    { label: 'Impressum', href: '/impressum' },
+    { label: 'Datenschutz', href: '/datenschutz' },
+  ],
+  showSocials = false,
+} = Astro.props;
+
+const year = new Date().getFullYear();
+const hasSocials = showSocials && site.socials && site.socials.length > 0;
+---
+<footer class="pw-footer">
+  <div class="container pw-footer-grid">
+    <div class="pw-footer-brand">
+      <span class="pw-footer-name">{site.name}</span>
+      {site.slogan && <p>{site.slogan}</p>}
+    </div>
+
+    <div class="pw-footer-col">
+      <span class="pw-footer-h">Kontakt</span>
+      <a href={`tel:+${site.telefonRaw}`}>{site.telefon}</a>
+      <a href={`mailto:${site.email}`}>{site.email}</a>
+      <address>{site.address.strasse}<br />{site.address.plz} {site.address.ort}</address>
+    </div>
+
+    <nav class="pw-footer-col" aria-label="Rechtliches">
+      <span class="pw-footer-h">Rechtliches</span>
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+
+    {hasSocials && (
+      <nav class="pw-footer-col" aria-label="Social Media">
+        <span class="pw-footer-h">Social</span>
+        {site.socials!.map((s) => (
+          <a href={s.href} target="_blank" rel="noopener">{s.label}</a>
+        ))}
+      </nav>
+    )}
+  </div>
+
+  <div class="container pw-footer-bottom">
+    <p>&copy; {year} {site.name}</p>
+    <p class="pw-attribution">
+      Website by <a href="https://portawerk.de" target="_blank" rel="noopener">PortaWerk</a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .pw-footer {
+    background: var(--c-surface-alt);
+    border-top: 1px solid var(--c-border);
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-lg);
+    color: var(--c-text);
+  }
+  .pw-footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-xl);
+  }
+  .pw-footer-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+  }
+  .pw-footer-brand p {
+    margin-top: var(--space-xs);
+    color: var(--c-text-muted);
+    font-size: var(--fs-small);
+    max-width: 34ch;
+  }
+  .pw-footer-col { display: flex; flex-direction: column; gap: 0.4rem; }
+  .pw-footer-h {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--c-text);
+    margin-bottom: 0.25rem;
+  }
+  .pw-footer-col a,
+  .pw-footer-col address {
+    font-size: var(--fs-small);
+    color: var(--c-text-muted);
+    font-style: normal;
+    line-height: var(--lh-snug);
+    transition: color var(--duration-fast) var(--ease-smooth);
+  }
+  .pw-footer-col a:hover { color: var(--c-primary); }
+
+  .pw-footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--c-border);
+    font-size: var(--fs-xs);
+    color: var(--c-text-muted);
+  }
+  .pw-attribution a {
+    color: var(--c-primary);
+    font-weight: 600;
+  }
+
+  @media (min-width: 640px) {
+    .pw-footer-grid { grid-template-columns: 1.5fr 1fr 1fr; }
+    .pw-footer-grid:has(nav[aria-label='Social Media']) {
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    }
+  }
+</style>

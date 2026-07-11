@@ -1,0 +1,41 @@
+---
+/**
+ * Seo.astro — alle Meta-Tags einer Seite. Wird von BaseLayout genutzt.
+ * Werte kommen von aussen (Props); Fallbacks aus site.ts.
+ */
+import { site } from '../config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogImage?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage = '/og-image.jpg',
+  noindex = false,
+} = Astro.props;
+
+const ogUrl = new URL(ogImage, site.domain).href;
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph -->
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={ogUrl} />
+<meta property="og:url" content={canonical} />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="de_DE" />
+<meta property="og:site_name" content={site.name} />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />

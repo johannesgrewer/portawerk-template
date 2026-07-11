@@ -1,0 +1,88 @@
+---
+/**
+ * TwoClickEmbed.astro — Maps/YouTube laden erst NACH Klick (DSGVO).
+ * Vorher wird kein Request an Google/YouTube gesendet.
+ */
+interface Props {
+  type: 'map' | 'youtube';
+  src: string;            // vollstaendige iframe-src (Maps-Embed-URL oder YouTube-Embed-URL)
+  previewImage?: string;  // optionales Vorschaubild
+  consentText?: string;
+  title?: string;         // Sichtbarer Titel/Alt
+}
+
+const { type, src, previewImage, consentText, title } = Astro.props;
+
+const label = title ?? (type === 'map' ? 'Karte' : 'Video');
+const defaultConsent =
+  type === 'map'
+    ? 'Beim Laden der Karte werden Daten an Google Maps uebertragen.'
+    : 'Beim Laden des Videos werden Daten an YouTube uebertragen.';
+const text = consentText ?? defaultConsent;
+---
+<div class="pw-2click" data-src={src} data-title={label}>
+  <button type="button" class="pw-2click-btn">
+    {previewImage && <img src={previewImage} alt="" class="pw-2click-preview" loading="lazy" />}
+    <span class="pw-2click-overlay">
+      <span class="pw-2click-text">{text}</span>
+      <span class="btn btn-primary">{label} laden</span>
+      <span class="pw-2click-hint">Laedt erst nach Klick &middot; DSGVO-konform</span>
+    </span>
+  </button>
+</div>
+
+<style>
+  .pw-2click {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--c-surface-alt);
+  }
+  .pw-2click-btn {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .pw-2click-preview { width: 100%; height: 100%; object-fit: cover; }
+  .pw-2click-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+  }
+  .pw-2click-text { font-size: var(--fs-small); max-width: 40ch; }
+  .pw-2click-hint { font-size: var(--fs-xs); opacity: 0.85; }
+  .pw-2click :global(iframe) { width: 100%; height: 100%; border: 0; display: block; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.pw-2click').forEach((box) => {
+    const btn = box.querySelector('button');
+    const src = box.dataset.src;
+    const title = box.dataset.title ?? '';
+    btn?.addEventListener('click', () => {
+      if (!src) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.title = title;
+      iframe.loading = 'lazy';
+      iframe.allow = 'fullscreen; picture-in-picture';
+      iframe.setAttribute('referrerpolicy', 'no-referrer');
+      box.replaceChildren(iframe);
+    });
+  });
+</script>

@@ -1,5 +1,5 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 
@@ -7,7 +7,7 @@ import Footer from "../components/Footer.astro";
 const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
 ---
 
-<Layout
+<BaseLayout
   title="Datenschutz | [FIRMENNAME]"
   description="Datenschutzerklärung von [FIRMENNAME]."
 >
@@ -135,7 +135,7 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
     </div>
   </main>
   <Footer />
-</Layout>
+</BaseLayout>
 
 <style>
   .legal-page {

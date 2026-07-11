@@ -1,0 +1,163 @@
+---
+/**
+ * Header.astro — sticky Kopf mit Nav, CTA und mobilem Burger-Menue.
+ * Struktur fest, Optik ueber Tokens. Inhalt ueber Props.
+ * a11y: <nav aria-label>, Burger als <button> mit aria-expanded/-controls,
+ * CTA bleibt auf Mobile sichtbar (ausserhalb des Burger).
+ */
+import { site } from '../config/site';
+
+interface NavLink { label: string; href: string; }
+interface Props {
+  logo?: string;          // Bildpfad; ohne -> Firmenname als Text
+  links?: NavLink[];      // Default: site.nav
+  ctaLabel?: string;      // Default: site.cta.label
+  ctaHref?: string;       // Default: site.cta.href
+  sticky?: boolean;
+}
+
+const {
+  logo,
+  links = site.nav,
+  ctaLabel = site.cta?.label,
+  ctaHref = site.cta?.href,
+  sticky = true,
+} = Astro.props;
+---
+<header class:list={['pw-header', { 'is-sticky': sticky }]}>
+  <div class="container pw-header-inner">
+    <a href="/" class="pw-logo" aria-label={`${site.name} — zur Startseite`}>
+      {logo ? <img src={logo} alt={site.name} height="40" width="auto" /> : <span>{site.name}</span>}
+    </a>
+
+    <nav class="pw-nav" aria-label="Hauptnavigation" id="pw-nav">
+      <ul>
+        {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <div class="pw-header-actions">
+      {ctaLabel && ctaHref && (
+        <a href={ctaHref} class="btn btn-primary pw-header-cta">{ctaLabel}</a>
+      )}
+      <button class="pw-burger" aria-label="Menue oeffnen" aria-expanded="false" aria-controls="pw-nav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<style>
+  .pw-header {
+    width: 100%;
+    background: var(--c-bg);
+    border-bottom: 1px solid var(--c-border);
+    z-index: 100;
+  }
+  .pw-header.is-sticky { position: sticky; top: 0; }
+
+  .pw-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    min-height: 64px;
+  }
+
+  .pw-logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--c-text);
+    flex-shrink: 0;
+  }
+  .pw-logo img { height: 40px; width: auto; }
+
+  .pw-nav ul {
+    display: flex;
+    gap: var(--space-lg);
+    list-style: none;
+  }
+  .pw-nav a {
+    font-size: var(--fs-small);
+    font-weight: 500;
+    color: var(--c-text);
+    padding: 0.5rem 0;
+    transition: color var(--duration-fast) var(--ease-smooth);
+  }
+  .pw-nav a:hover { color: var(--c-primary); }
+
+  .pw-header-actions { display: flex; align-items: center; gap: var(--space-sm); }
+
+  .pw-burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    padding: 10px;
+  }
+  .pw-burger span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: var(--c-text);
+    border-radius: 2px;
+    transition: transform var(--duration-fast) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth);
+  }
+  .pw-burger[aria-expanded='true'] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .pw-burger[aria-expanded='true'] span:nth-child(2) { opacity: 0; }
+  .pw-burger[aria-expanded='true'] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ── Mobile ── */
+  @media (max-width: 899px) {
+    .pw-burger { display: flex; }
+    .pw-nav {
+      position: absolute;
+      top: 64px;
+      left: 0;
+      right: 0;
+      background: var(--c-bg);
+      border-bottom: 1px solid var(--c-border);
+      box-shadow: var(--shadow-md);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--duration-normal) var(--ease-out);
+    }
+    .pw-nav.is-open { max-height: 70vh; }
+    .pw-nav ul {
+      flex-direction: column;
+      gap: 0;
+      padding: var(--space-sm) var(--section-px);
+    }
+    .pw-nav li { border-bottom: 1px solid var(--c-border); }
+    .pw-nav li:last-child { border-bottom: none; }
+    .pw-nav a { display: block; padding: var(--space-md) 0; }
+    /* CTA bleibt sichtbar, nur auf sehr schmalen Screens ausblenden */
+    @media (max-width: 400px) { .pw-header-cta { display: none; } }
+  }
+</style>
+
+<script>
+  const burger = document.querySelector<HTMLButtonElement>('.pw-burger');
+  const nav = document.getElementById('pw-nav');
+  if (burger && nav) {
+    const setOpen = (open: boolean) => {
+      nav.classList.toggle('is-open', open);
+      burger.setAttribute('aria-expanded', String(open));
+      burger.setAttribute('aria-label', open ? 'Menue schliessen' : 'Menue oeffnen');
+    };
+    burger.addEventListener('click', () => setOpen(burger.getAttribute('aria-expanded') !== 'true'));
+    nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        burger.focus();
+      }
+    });
+  }
+</script>

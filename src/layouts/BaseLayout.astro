@@ -1,0 +1,80 @@
+---
+/**
+ * BaseLayout.astro — Grundgeruest jeder Seite.
+ * Bindet Tokens, Base-CSS, SEO, LocalBusiness, Fonts, Umami, Skip-Link ein.
+ * Genau eine H1 pro Seite kommt aus dem Seiteninhalt (Slot).
+ */
+import '../config/tokens.css';
+import '../styles/globals.css';
+import Seo from '../seo/Seo.astro';
+import LocalBusiness from '../seo/LocalBusiness.astro';
+import SkipToContent from '../components/SkipToContent.astro';
+import { site } from '../config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  canonical?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  canonical = Astro.url.href,
+  noindex = false,
+} = Astro.props;
+
+const umamiActive = site.umamiId && !site.umamiId.startsWith('[');
+---
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <Seo title={title} description={description} canonical={canonical} ogImage={ogImage} noindex={noindex} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Font-Preload (self-hosted). TODO(font-skill): Pfade auf echte Fonts setzen + aktivieren.
+    <link rel="preload" href="/fonts/[display-font]/[display-font]-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/[body-font]/[body-font]-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    -->
+
+    <!-- Umami Analytics (self-hosted, DSGVO-konform, kein Cookie) -->
+    {umamiActive && (
+      <script defer src="https://analytics.z-up.studio/script.js" data-website-id={site.umamiId}></script>
+    )}
+
+    <LocalBusiness />
+
+    <!-- Seiten koennen zusaetzliche head-Tags einschieben (z.B. FAQ-Schema) -->
+    <slot name="head" />
+  </head>
+
+  <body>
+    <SkipToContent />
+    <slot />
+
+    <!-- IntersectionObserver fuer Scroll-Animationen (.animate-on-scroll) -->
+    <script>
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>

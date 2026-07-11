@@ -1,48 +1,41 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site';
 ---
-
-<Layout
-  title="Seite nicht gefunden | [FIRMENNAME]"
+<BaseLayout
+  title={`Seite nicht gefunden | ${site.name}`}
   description="Die angeforderte Seite existiert nicht."
+  noindex={true}
 >
   <Header />
   <main id="main-content" class="error-page">
     <div class="error-content">
       <span class="error-code">404</span>
       <h1 class="error-headline">Seite nicht gefunden.</h1>
-      <p class="error-text">
-        Die Seite, die du suchst, existiert nicht oder wurde verschoben.
-      </p>
+      <p class="error-text">Die Seite, die Sie suchen, existiert nicht oder wurde verschoben.</p>
       <a href="/" class="btn btn-primary">
         Zur Startseite
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
         </svg>
       </a>
     </div>
   </main>
   <Footer />
-</Layout>
+</BaseLayout>
 
 <style>
   .error-page {
-    min-height: 80vh;
+    min-height: 70vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: calc(64px + var(--space-2xl)) var(--section-px) var(--space-2xl);
-    background: var(--c-bg);
   }
-
-  .error-content {
-    text-align: center;
-    max-width: 500px;
-  }
-
+  .error-content { text-align: center; max-width: 500px; }
   .error-code {
     font-family: var(--font-display);
     font-size: clamp(5rem, 15vw, 10rem);
@@ -53,11 +46,6 @@ import Footer from "../components/Footer.astro";
     display: block;
     margin-bottom: var(--space-sm);
   }
-
   .error-headline { margin-bottom: var(--space-sm); }
-
-  .error-text {
-    color: var(--c-text-muted);
-    margin-bottom: var(--space-lg);
-  }
+  .error-text { color: var(--c-text-muted); margin-bottom: var(--space-lg); }
 </style>

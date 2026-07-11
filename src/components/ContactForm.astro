@@ -1,0 +1,181 @@
+---
+/**
+ * ContactForm.astro — Frontend des Anfrageformulars.
+ * Postet an den gehaerteten Form-Worker (blocks/form-worker). Die echte
+ * Absicherung sitzt im Worker; hier: Honeypot, Zeitstempel, HTML-Validierung,
+ * Datenschutz-Pflichthaken, Inline-Feedback.
+ */
+import { site } from '../config/site';
+
+interface Field { name: string; label: string; type?: string; required?: boolean; }
+interface Props {
+  endpoint?: string;
+  fields?: Field[];
+  subjectOptions?: string[];
+  successRedirect?: string;
+  privacyHref?: string;
+}
+
+const {
+  endpoint = site.contactEndpoint,
+  fields = [
+    { name: 'name', label: 'Name', type: 'text', required: true },
+    { name: 'email', label: 'E-Mail', type: 'email', required: true },
+    { name: 'telefon', label: 'Telefon', type: 'tel', required: false },
+    { name: 'message', label: 'Nachricht', type: 'textarea', required: true },
+  ],
+  subjectOptions,
+  successRedirect = '/danke',
+  privacyHref = '/datenschutz',
+} = Astro.props;
+
+// Turnstile-Widget nur rendern, wenn ein Site-Key hinterlegt ist.
+const turnstileKey = site.turnstileSiteKey?.trim() || '';
+---
+<form class="pw-form" action={endpoint} method="POST" data-success={successRedirect} novalidate>
+  {subjectOptions && (
+    <div class="pw-field">
+      <label for="pw-subject">Betreff</label>
+      <select id="pw-subject" name="subject">
+        {subjectOptions.map((o) => <option value={o}>{o}</option>)}
+      </select>
+    </div>
+  )}
+
+  {fields.map((f) => (
+    <div class="pw-field">
+      <label for={`pw-${f.name}`}>
+        {f.label}{f.required && <span class="pw-req" aria-hidden="true"> *</span>}
+      </label>
+      {f.type === 'textarea' ? (
+        <textarea id={`pw-${f.name}`} name={f.name} required={f.required} rows="5"></textarea>
+      ) : (
+        <input
+          id={`pw-${f.name}`}
+          name={f.name}
+          type={f.type ?? 'text'}
+          required={f.required}
+          autocomplete="on"
+        />
+      )}
+    </div>
+  ))}
+
+  {/* Honeypot — fuer Menschen unsichtbar, fuer Bots verlockend (Feldname laut Worker-Vertrag: company) */}
+  <div class="pw-hp" aria-hidden="true">
+    <label for="pw-company">Firma (bitte frei lassen)</label>
+    <input id="pw-company" name="company" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <div class="pw-field pw-consent-check">
+    <label>
+      <input type="checkbox" name="privacy" required />
+      <span>Ich habe die <a href={privacyHref}>Datenschutzerklaerung</a> gelesen und stimme der Verarbeitung meiner Daten zu.</span>
+    </label>
+  </div>
+
+  {turnstileKey && (
+    <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="auto"></div>
+  )}
+
+  <button type="submit" class="btn btn-primary pw-submit">Anfrage senden</button>
+  <p class="pw-form-status" role="status" aria-live="polite"></p>
+</form>
+
+{turnstileKey && (
+  <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+)}
+
+<style>
+  .pw-form { display: flex; flex-direction: column; gap: var(--space-md); max-width: 640px; }
+  .pw-field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .pw-field label { font-size: var(--fs-small); font-weight: 600; color: var(--c-text); }
+  .pw-req { color: var(--c-accent); }
+  .pw-field input,
+  .pw-field textarea,
+  .pw-field select {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 0.75rem 0.875rem;
+    min-height: 48px;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: var(--c-white);
+    color: var(--c-text);
+    width: 100%;
+  }
+  .pw-field textarea { min-height: 120px; resize: vertical; }
+  .pw-field input:focus, .pw-field textarea:focus, .pw-field select:focus {
+    outline: none;
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-primary) 20%, transparent);
+  }
+
+  /* Honeypot komplett aus dem Blickfeld */
+  .pw-hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .pw-consent-check label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: var(--fs-small);
+    font-weight: 400;
+    color: var(--c-text-muted);
+    line-height: var(--lh-snug);
+  }
+  .pw-consent-check input { min-height: auto; width: auto; margin-top: 0.2rem; }
+  .pw-consent-check a { color: var(--c-primary); text-decoration: underline; }
+
+  .pw-submit { align-self: flex-start; }
+  .pw-submit[disabled] { opacity: 0.6; cursor: progress; }
+
+  .pw-form-status { font-size: var(--fs-small); min-height: 1.2em; }
+  .pw-form-status.is-error { color: var(--c-accent); }
+  .pw-form-status.is-ok { color: var(--c-primary); }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('.pw-form').forEach((form) => {
+    const status = form.querySelector<HTMLElement>('.pw-form-status');
+    const submit = form.querySelector<HTMLButtonElement>('.pw-submit');
+    const success = form.dataset.success || '/danke';
+
+    const setStatus = (msg: string, kind: '' | 'ok' | 'error') => {
+      if (!status) return;
+      status.textContent = msg;
+      status.classList.toggle('is-error', kind === 'error');
+      status.classList.toggle('is-ok', kind === 'ok');
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+
+      submit?.setAttribute('disabled', 'true');
+      setStatus('Wird gesendet …', '');
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        if (res.ok) {
+          window.location.href = success;
+        } else {
+          setStatus('Das hat leider nicht geklappt. Bitte spaeter erneut versuchen oder direkt anrufen.', 'error');
+          submit?.removeAttribute('disabled');
+        }
+      } catch {
+        setStatus('Keine Verbindung. Bitte pruefen Sie Ihre Internetverbindung.', 'error');
+        submit?.removeAttribute('disabled');
+      }
+    });
+  });
+</script>

@@ -1,35 +1,41 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-
-// TODO: Sektionen je nach PRB hinzufügen:
-// import Hero from "../components/Hero.astro";
-// import SocialProof from "../components/SocialProof.astro";
-// import About from "../components/About.astro";
-// import Services from "../components/Services.astro";
-// import Stats from "../components/Stats.astro";
-// import CtaDivider from "../components/CtaDivider.astro";
-// import Testimonials from "../components/Testimonials.astro";
-// import Faq from "../components/Faq.astro";
-// import ContactForm from "../components/ContactForm.astro";
+/**
+ * index.astro — Startseite.
+ * Fundament: BaseLayout + Header + Footer stehen fest.
+ * Die HAUT (Hero + Content-Sektionen) wird pro Kunde frei gebaut und
+ * hier in <main> eingesetzt. Unten ein minimales Platzhalter-Beispiel,
+ * damit der Starter sofort baut.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Section from '../components/Section.astro';
+import { site } from '../config/site';
 ---
-
-<Layout>
+<BaseLayout
+  title={`${site.name} | ${site.slogan}`}
+  description="TODO: individuelle Meta-Description (max. 155 Zeichen) pro Kunde."
+>
   <Header />
   <main id="main-content">
+    <!-- ══════════════════════════════════════════════════════════
+         HAUT — hier kommt der Kundeninhalt rein (Hero + Sektionen).
+         Frei gebaut pro Kunde. Extraktion in die Bibliothek erst
+         nach der Drittel-Regel. Das Folgende ist nur Platzhalter.
+         ══════════════════════════════════════════════════════════ -->
+    <Section id="start">
+      <p class="badge">PortaWerk Starter-Fundament</p>
+      <h1>{site.name}</h1>
+      <p>{site.slogan}</p>
+      <a href={site.cta.href} class="btn btn-primary">{site.cta.label}</a>
+    </Section>
 
-    <!-- TODO: Sektionen hier einsetzen -->
-    <!-- <Hero /> -->
-    <!-- <SocialProof /> -->
-    <!-- <About /> -->
-    <!-- <Services /> -->
-    <!-- <Stats /> -->
-    <!-- <CtaDivider /> -->
-    <!-- <Testimonials /> -->
-    <!-- <Faq /> -->
-    <!-- <ContactForm /> -->
-
+    <Section background="surface" id="kontakt">
+      <h2>Kontakt</h2>
+      <p>Platzhalter-Kontaktsektion mit dem gehaerteten Anfrageformular.</p>
+      <ContactForm />
+    </Section>
   </main>
   <Footer />
-</Layout>
+</BaseLayout>

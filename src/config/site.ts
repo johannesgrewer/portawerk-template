@@ -1,0 +1,106 @@
+/**
+ * PortaWerk Starter — site.ts
+ * ALLE kundenspezifischen Daten an EINER Stelle.
+ * Beim Fork nur diese Datei (+ tokens.css) anpassen.
+ */
+
+export interface SiteConfig {
+  /** Firmenname */
+  name: string;
+  /** Kurzer Slogan / Claim */
+  slogan: string;
+  /** Sprache (ISO), Default de */
+  lang: string;
+  /** Produktions-Domain inkl. https:// (ohne Slash am Ende) */
+  domain: string;
+
+  address: {
+    strasse: string;
+    plz: string;
+    ort: string;
+    /** Bundesland (fuer LocalBusiness/Impressum), optional */
+    region?: string;
+  };
+
+  email: string;
+  telefon: string;
+  /** Telefon nur Ziffern inkl. Laendervorwahl, fuer tel:-Links (z.B. 4915112345678) */
+  telefonRaw: string;
+
+  /** Oeffnungszeiten als Klartext-Zeilen, optional */
+  oeffnungszeiten?: string[];
+
+  /** Geo-Koordinaten fuer LocalBusiness, optional */
+  geo?: { lat: number; lng: number };
+
+  /** Schema.org-Typ, praeziser als "LocalBusiness" wenn moeglich
+   *  (z.B. "Plumber", "Restaurant", "BeautySalon", "HomeAndConstructionBusiness") */
+  businessType: string;
+
+  /** Umami Website-ID (self-hosted Analytics) */
+  umamiId: string;
+
+  /** Oeffentliche URL des Form-Workers (kein Secret) */
+  contactEndpoint: string;
+
+  /** Turnstile Site-Key (oeffentlich). Leer = kein Bot-Schutz-Widget. */
+  turnstileSiteKey: string;
+
+  /** Hauptnavigation (Header) */
+  nav: { label: string; href: string }[];
+  /** Primaerer CTA-Button (Header) */
+  cta: { label: string; href: string };
+
+  /** Social-Profile, optional (nur Links, kein Tracking) */
+  socials?: { label: string; href: string }[];
+
+  /** Angaben fuer Impressum */
+  legal: {
+    inhaber: string;
+    /** USt-IdNr., optional */
+    ustId?: string;
+  };
+}
+
+export const site: SiteConfig = {
+  name: '[FIRMENNAME]',
+  slogan: '[SLOGAN]',
+  lang: 'de',
+  domain: 'https://example.com', // TODO: echte Kundendomain (muss mit astro.config site uebereinstimmen)
+
+  address: {
+    strasse: '[STRASSE HAUSNR]',
+    plz: '[PLZ]',
+    ort: '[ORT]',
+    region: '[BUNDESLAND]',
+  },
+
+  email: 'info@[domain].de',
+  telefon: '[+49 ...]',
+  telefonRaw: '49000000000',
+
+  oeffnungszeiten: [
+    'Mo–Fr: 08:00–17:00 Uhr',
+  ],
+
+  // geo: { lat: 0, lng: 0 },
+
+  businessType: 'LocalBusiness',
+  umamiId: '[UMAMI-WEBSITE-ID]',
+  contactEndpoint: 'https://[form-worker].workers.dev',
+  turnstileSiteKey: '', // Site-Key aus dem Cloudflare-Turnstile-Dashboard, sonst leer lassen
+
+  nav: [
+    { label: 'Leistungen', href: '/#leistungen' },
+    { label: 'Ueber uns', href: '/#ueber-uns' },
+    { label: 'Kontakt', href: '/#kontakt' },
+  ],
+  cta: { label: 'Anfrage', href: '/#kontakt' },
+
+  // socials: [{ label: 'Instagram', href: 'https://instagram.com/...' }],
+
+  legal: {
+    inhaber: '[VORNAME NACHNAME]',
+    // ustId: 'DE...',
+  },
+};

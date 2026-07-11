@@ -1,10 +1,10 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 ---
 
-<Layout
+<BaseLayout
   title="Impressum | [FIRMENNAME]"
   description="Impressum und Angaben gemäß § 5 TMG für [FIRMENNAME]."
 >
@@ -83,7 +83,7 @@ import Footer from "../components/Footer.astro";
     </div>
   </main>
   <Footer />
-</Layout>
+</BaseLayout>
 
 <style>
   .legal-page {

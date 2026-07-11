@@ -1,0 +1,36 @@
+---
+/**
+ * LocalBusiness.astro — Schema.org strukturierte Daten aus site.ts.
+ * Damit Google den Betrieb als lokales Business erkennt.
+ * type ueberschreibbar fuer praezisere Branchen (z.B. "Plumber").
+ */
+import { site } from '../config/site';
+
+interface Props {
+  type?: string;
+}
+
+const { type = site.businessType } = Astro.props;
+
+const schema: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': type,
+  name: site.name,
+  url: site.domain,
+  telephone: site.telefon,
+  email: site.email,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.strasse,
+    addressLocality: site.address.ort,
+    postalCode: site.address.plz,
+    ...(site.address.region ? { addressRegion: site.address.region } : {}),
+    addressCountry: 'DE',
+  },
+  image: new URL('/og-image.jpg', site.domain).href,
+  ...(site.geo
+    ? { geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng } }
+    : {}),
+};
+---
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
