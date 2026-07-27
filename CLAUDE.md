@@ -25,6 +25,7 @@
 - JS nur für: IntersectionObserver, Kontaktformular, Menü-Toggle
 - Genau eine `<h1>` pro Seite
 - **Inhalte nie allein per JS einblenden.** `.animate-on-scroll` greift nur unter `html.js`, damit ohne JavaScript nichts unsichtbar stehen bleibt.
+- **Icons immer aus dem Lucide-Set**, nie selbst als SVG zeichnen: `npm i lucide-astro`, dann `import Wifi from 'lucide-astro/Wifi'` (ohne `.astro`-Endung, sonst bricht der Build). Rendert als Inline-SVG, lädt nichts nach.
 
 ## Analytics
 Cloudflare Web Analytics, cookielos und ohne Einwilligungspflicht. Liegt die Zone bei Cloudflare, reicht die **automatische Injektion** im Dashboard, dann bleibt `cfAnalyticsToken` in `site.ts` leer und es kommt kein Skript in den Code. Nur für Seiten außerhalb der Cloudflare-Zone dort den Site-Token eintragen.
