@@ -14,8 +14,6 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Vercel
-.vercel/
 
 # Ressourcen (Rohdateien vom Kunden — nur lokal)
 resources/

@@ -2,27 +2,33 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { site } from "../config/site";
 
-// TODO: Datum aktualisieren
 const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
 ---
 
 <BaseLayout
-  title="Datenschutz | [FIRMENNAME]"
-  description="Datenschutzerklärung von [FIRMENNAME]."
+  title={`Datenschutz | ${site.name}`}
+  description={`Datenschutzerklärung von ${site.name}.`}
+  noindex={true}
 >
   <Header />
   <main id="main-content" class="legal-page">
     <div class="container container-narrow legal-content">
       <h1>Datenschutzerkl&auml;rung</h1>
 
+      <p class="entwurf">
+        Entwurfsstand für die Vorschau. Die verbindliche Datenschutzerklärung wird
+        vor dem Livegang über eRecht24 erstellt und laufend aktuell gehalten.
+      </p>
+
       <h2>1. Verantwortlicher</h2>
       <p>
-        [KUNDE.INHABER]<br/>
-        [KUNDE.FIRMENNAME]<br/>
-        [KUNDE.STRASSE], [KUNDE.PLZ] [KUNDE.STADT]<br/>
-        E-Mail: <a href="mailto:[KUNDE.EMAIL]">[KUNDE.EMAIL]</a><br/>
-        Telefon: <a href="tel:+49[TELEFON-ZIFFERN]">[KUNDE.TELEFON]</a>
+        {site.legal.inhaber}<br/>
+        {site.name}<br/>
+        {site.address.strasse}, {site.address.plz} {site.address.ort}<br/>
+        E-Mail: <a href={`mailto:${site.email}`}>{site.email}</a><br/>
+        Telefon: <a href={`tel:+${site.telefonRaw}`}>{site.telefon}</a>
       </p>
 
       <h2>2. Allgemeines zur Datenverarbeitung</h2>
@@ -34,16 +40,16 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
 
       <h2>3. Hosting</h2>
       <p>
-        Diese Website wird bei <strong>Vercel Inc.</strong> gehostet. Beim Aufruf werden automatisch
+        Diese Website wird bei <strong>Cloudflare, Inc.</strong> gehostet. Beim Aufruf werden automatisch
         Informationen in Server-Log-Files erfasst (IP-Adresse, Browsertyp, Betriebssystem, Referrer-URL,
-        Uhrzeit). Vercel betreibt ein globales Edge-Network; Anfragen aus der EU werden bevorzugt &uuml;ber
-        europ&auml;ische Server verarbeitet.
+        Uhrzeit). Cloudflare betreibt ein globales Netzwerk; Anfragen aus der EU werden bevorzugt &uuml;ber
+        europ&auml;ische Standorte verarbeitet.
       </p>
       <p>
         Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an zuverl&auml;ssiger
-        Darstellung der Website). Ein Auftragsverarbeitungsvertrag mit Vercel liegt vor.<br/>
-        <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">
-          Datenschutzerkl&auml;rung Vercel
+        Darstellung der Website). Ein Auftragsverarbeitungsvertrag mit Cloudflare liegt vor.<br/>
+        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+          Datenschutzerkl&auml;rung Cloudflare
         </a>
       </p>
 
@@ -59,27 +65,28 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
         Nachricht) zur Bearbeitung Ihrer Anfrage gespeichert und nicht ohne Ihre Einwilligung weitergegeben.
       </p>
       <p>
-        Formularverarbeitung: <strong>Supabase</strong> (supabase.com, Region Frankfurt, EU) &mdash; Daten
-        werden &uuml;ber eine Supabase Edge Function verarbeitet und in einer Datenbank gespeichert.<br/>
-        E-Mail-Benachrichtigung: <strong>Resend</strong> (resend.com). Auftragsverarbeitungsvertr&auml;ge
-        liegen vor.<br/>
+        Formularverarbeitung: <strong>Cloudflare Workers</strong> (Cloudflare, Inc.). Ihre Angaben werden
+        dort ausschlie&szlig;lich zur Weiterleitung verarbeitet und nicht dauerhaft gespeichert.<br/>
+        E-Mail-Zustellung: <strong>Brevo</strong> (brevo.com, Sendinblue GmbH).
+        Auftragsverarbeitungsvertr&auml;ge liegen vor.<br/>
         Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
-      <!-- Nur einbauen wenn Website-Analytics aktiv: -->
-      <!--
-      <h2>6. Website-Analyse (Umami)</h2>
+      <h2>6. Website-Analyse (Cloudflare Web Analytics)</h2>
       <p>
-        Diese Website verwendet Umami, ein datenschutzfreundliches, selbst gehostetes Analyse-Tool.
-        Umami setzt keine Cookies und erhebt keine personenbezogenen Daten. Erfasst werden ausschließlich
-        Seitenaufrufe, Verweildauer, Referrer, Browser/OS und Land (ohne genauen Standort). Es werden
-        keine IP-Adressen oder gerätespezifische Kennungen gespeichert.
+        Diese Website verwendet Cloudflare Web Analytics, ein datenschutzfreundliches Analyse-Tool
+        der Cloudflare, Inc. Es setzt <strong>keine Cookies</strong> und verwendet kein Fingerprinting.
+        Erfasst werden ausschlie&szlig;lich Seitenaufrufe, Referrer, Browser, Betriebssystem, Ger&auml;tetyp
+        und Land (ohne genauen Standort). IP-Adressen werden nicht gespeichert, es werden keine Profile
+        &uuml;ber einzelne Besucher gebildet. Eine Einwilligung ist daf&uuml;r nicht erforderlich.
       </p>
       <p>
-        Server-Standort: Deutschland (Hetzner Online GmbH).<br/>
-        Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).
+        Anbieter: Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA.
+        Ein Auftragsverarbeitungsvertrag liegt vor. [NACHTRAGEN via eRecht24: aktuelle Angaben
+        zum Drittlandtransfer pr&uuml;fen.]<br/>
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer
+        datensparsamen Reichweitenmessung).
       </p>
-      -->
 
       <!-- Nur bei 2-Klick Google Maps: -->
       <!--
@@ -103,8 +110,10 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
 
       <h2>7. Cookies &amp; Tracking</h2>
       <p>
-        <strong>Diese Website verwendet keine Tracking-Cookies.</strong> Es werden keine Analyse-Tools
-        wie Google Analytics eingesetzt. Kein Cookie-Banner erforderlich.
+        <strong>Diese Website setzt keine Cookies.</strong> Es kommen keine Tracking-Dienste wie
+        Google Analytics zum Einsatz, und es findet keine geräteübergreifende Wiedererkennung statt.
+        Die unter Punkt 6 beschriebene Reichweitenmessung arbeitet cookielos, deshalb ist auch
+        kein Cookie-Banner erforderlich.
       </p>
 
       <h2>8. Ihre Rechte</h2>
@@ -116,13 +125,12 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
       </p>
       <p>
         Zur Aus&uuml;bung Ihrer Rechte wenden Sie sich an:
-        <a href="mailto:[KUNDE.EMAIL]">[KUNDE.EMAIL]</a>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
       </p>
 
       <h2>9. Beschwerderecht</h2>
       <p>
         Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbeh&ouml;rde zu beschweren.<br/>
-        <!-- TODO: Bundesland des Kunden prüfen, ggf. andere Behörde eintragen -->
         Zust&auml;ndige Beh&ouml;rde (Rheinland-Pfalz):<br/>
         Der Landesbeauftragte f&uuml;r den Datenschutz und die Informationsfreiheit Rheinland-Pfalz<br/>
         Hintere Bleiche 34, 55116 Mainz &middot;
@@ -144,7 +152,16 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
     background: var(--c-bg);
   }
 
-  .legal-content h1 { margin-bottom: var(--space-xl); }
+  .legal-content h1 { margin-bottom: var(--space-lg); }
+
+  .entwurf {
+    padding: var(--space-md);
+    background: var(--c-surface);
+    border-left: 3px solid var(--c-accent);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-small);
+    margin-bottom: var(--space-xl);
+  }
 
   .legal-content h2 {
     font-size: var(--fs-h3);

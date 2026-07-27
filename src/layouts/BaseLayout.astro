@@ -1,7 +1,7 @@
 ---
 /**
  * BaseLayout.astro — Grundgeruest jeder Seite.
- * Bindet Tokens, Base-CSS, SEO, LocalBusiness, Fonts, Umami, Skip-Link ein.
+ * Bindet Tokens, Base-CSS, SEO, LocalBusiness, Fonts, Analytics, Skip-Link ein.
  * Genau eine H1 pro Seite kommt aus dem Seiteninhalt (Slot).
  */
 import '../config/tokens.css';
@@ -27,13 +27,19 @@ const {
   noindex = false,
 } = Astro.props;
 
-const umamiActive = site.umamiId && !site.umamiId.startsWith('[');
+// Nur noetig, wenn die Zone NICHT bei Cloudflare liegt. Sonst injiziert
+// Cloudflare den Beacon selbst (Dashboard > Web Analytics).
+const cfBeaconToken = site.cfAnalyticsToken?.trim() || '';
 ---
 <!doctype html>
 <html lang={site.lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Markiert, dass JS laeuft. Erst dann darf CSS Inhalte fuer die
+         Scroll-Animation ausblenden (siehe .js .animate-on-scroll). -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
 
     <Seo title={title} description={description} canonical={canonical} ogImage={ogImage} noindex={noindex} />
 
@@ -42,14 +48,23 @@ const umamiActive = site.umamiId && !site.umamiId.startsWith('[');
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- Font-Preload (self-hosted). TODO(font-skill): Pfade auf echte Fonts setzen + aktivieren.
+    <!-- Font-Preload (self-hosted). TODO(pro Kunde): Pfade auf die gewaehlten Fonts
+         setzen und aktivieren. Nur die normal-Schnitte, Italic laedt bei Bedarf nach.
     <link rel="preload" href="/fonts/[display-font]/[display-font]-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/[body-font]/[body-font]-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     -->
 
-    <!-- Umami Analytics (self-hosted, DSGVO-konform, kein Cookie) -->
-    {umamiActive && (
-      <script defer src="https://analytics.z-up.studio/script.js" data-website-id={site.umamiId}></script>
+    <!-- Cloudflare Web Analytics (cookielos). Nur als Fallback fuer Seiten
+         ausserhalb der Cloudflare-Zone, sonst uebernimmt das die Auto-Injektion.
+         Kein integrity/SRI: Cloudflare pinnt das Beacon-Skript bewusst nicht auf
+         eine Version, ein Hash wuerde beim naechsten Update brechen. Bei der
+         Auto-Injektion setzt Cloudflare das integrity-Attribut selbst. -->
+    {cfBeaconToken && (
+      <script
+        type="module"
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={`{"token": "${cfBeaconToken}"}`}
+      ></script>
     )}
 
     <LocalBusiness />
@@ -64,7 +79,11 @@ const umamiActive = site.umamiId && !site.umamiId.startsWith('[');
 
     <!-- IntersectionObserver fuer Scroll-Animationen (.animate-on-scroll) -->
     <script>
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const zielElemente = document.querySelectorAll('.animate-on-scroll');
+      if (!('IntersectionObserver' in window)) {
+        // Kein Observer verfuegbar: alles sofort zeigen, nie unsichtbar stehen lassen.
+        zielElemente.forEach((el) => el.classList.add('is-visible'));
+      } else if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
@@ -73,7 +92,7 @@ const umamiActive = site.umamiId && !site.umamiId.startsWith('[');
             }
           });
         }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-        document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
+        zielElemente.forEach((el) => observer.observe(el));
       }
     </script>
   </body>

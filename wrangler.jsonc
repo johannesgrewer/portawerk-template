@@ -1,0 +1,50 @@
+{
+  // Cloudflare Worker mit Static Assets. Loest Cloudflare Pages ab, weil Pages
+  // bei Cloudflare nur noch gepflegt und nicht mehr weiterentwickelt wird.
+  //
+  // PRO KUNDE ANPASSEN: "name" auf <projekt-slug>-preview setzen und die Route
+  // auf die Vorschau-Subdomain. Nie ein nacktes *.workers.dev verlinken.
+  //
+  // VORAUSSETZUNG: Die Domain muss als Zone bei Cloudflare liegen. Fuer die
+  // Vorschau ist das portawerk.de, fuer den Livegang die Kundendomain. Liegt
+  // die Kundendomain zwingend bei einem Fremdanbieter, geht Workers NICHT,
+  // dann bleibt nur Cloudflare Pages.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "[projekt-slug]-preview",
+  "compatibility_date": "2026-07-27",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "[projekt].portawerk.de", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
+
+  // ── Kontaktformular (erst im Build, nicht im Pitch) ──────────────────
+  // Das Formular gehoert in DENSELBEN Worker, nicht in einen zweiten daneben.
+  // Gleiche Origin heisst: die CSP in public/_headers braucht keine fremde
+  // Origin in connect-src und form-action. Genau das wurde frueher regelmaessig
+  // vergessen, und dann scheitert der Formularversand still.
+  //
+  // Dafuer ergaenzen:
+  //   "main": "./worker/index.ts",
+  //   "assets": { ..., "binding": "ASSETS", "run_worker_first": ["/api/*"] }
+  //
+  // Und im Worker:
+  //   export default class extends WorkerEntrypoint {
+  //     async fetch(request) {
+  //       const url = new URL(request.url);
+  //       if (url.pathname === '/api/kontakt') return handleKontakt(request, this.env);
+  //       return this.env.ASSETS.fetch(request);
+  //     }
+  //   }
+  //
+  // Achtung: Header aus public/_headers gelten NICHT fuer Antworten, die der
+  // Worker selbst erzeugt. Security-Header dort im Code setzen.
+  //
+  // Brevo-Secrets nie in diese Datei, sondern:
+  //   printf '%s' "$KEY" | npx wrangler secret put BREVO_API_KEY
+}

@@ -173,7 +173,9 @@ p { max-width: 70ch; line-height: var(--lh-normal); }
 
 /* ══════════════════════════ SCROLL ANIMATIONS ══════════════════════════ */
 
-.animate-on-scroll {
+/* Ausgeblendet wird NUR, wenn JS laeuft (html.js wird im BaseLayout gesetzt).
+   Ohne JS bleibt der Inhalt sichtbar, statt dauerhaft auf opacity:0 zu haengen. */
+.js .animate-on-scroll {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
@@ -185,7 +187,7 @@ p { max-width: 70ch; line-height: var(--lh-normal); }
 .animate-on-scroll:nth-child(5) { transition-delay: 0.4s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-on-scroll { opacity: 1; transform: none; transition: none; }
+  .js .animate-on-scroll { opacity: 1; transform: none; transition: none; }
   html { scroll-behavior: auto; }
 }
 

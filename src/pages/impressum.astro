@@ -2,29 +2,36 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { site } from "../config/site";
 ---
 
 <BaseLayout
-  title="Impressum | [FIRMENNAME]"
-  description="Impressum und Angaben gemäß § 5 TMG für [FIRMENNAME]."
+  title={`Impressum | ${site.name}`}
+  description={`Impressum und Angaben gemäß § 5 TMG für ${site.name}.`}
+  noindex={true}
 >
   <Header />
   <main id="main-content" class="legal-page">
     <div class="container container-narrow legal-content">
       <h1>Impressum</h1>
 
+      <p class="entwurf">
+        Entwurfsstand für die Vorschau. Die verbindlichen Rechtstexte werden vor
+        dem Livegang über eRecht24 erstellt und laufend aktuell gehalten.
+      </p>
+
       <h2>Angaben gem&auml;&szlig; &sect; 5 TMG</h2>
       <p>
-        [KUNDE.INHABER]<br/>
-        [KUNDE.FIRMENNAME]<br/>
-        [KUNDE.STRASSE]<br/>
-        [KUNDE.PLZ] [KUNDE.STADT]
+        {site.legal.inhaber}<br/>
+        {site.name}<br/>
+        {site.address.strasse}<br/>
+        {site.address.plz} {site.address.ort}
       </p>
 
       <h2>Kontakt</h2>
       <p>
-        Telefon: <a href="tel:+49[TELEFON-ZIFFERN]">[KUNDE.TELEFON]</a><br/>
-        E-Mail: <a href="mailto:[KUNDE.EMAIL]">[KUNDE.EMAIL]</a>
+        Telefon: <a href={`tel:+${site.telefonRaw}`}>{site.telefon}</a><br/>
+        E-Mail: <a href={`mailto:${site.email}`}>{site.email}</a>
       </p>
 
       <!-- Nur einbauen wenn USt-ID vorhanden: -->
@@ -92,7 +99,16 @@ import Footer from "../components/Footer.astro";
     background: var(--c-bg);
   }
 
-  .legal-content h1 { margin-bottom: var(--space-xl); }
+  .legal-content h1 { margin-bottom: var(--space-lg); }
+
+  .entwurf {
+    padding: var(--space-md);
+    background: var(--c-surface);
+    border-left: 3px solid var(--c-accent);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-small);
+    margin-bottom: var(--space-xl);
+  }
 
   .legal-content h2 {
     font-size: var(--fs-h3);
