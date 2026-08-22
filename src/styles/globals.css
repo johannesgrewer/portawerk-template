@@ -46,6 +46,8 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
   color: var(--c-text);
   text-wrap: balance;
+  hyphens: manual;
+  overflow-wrap: break-word;
 }
 
 h1 { font-size: var(--fs-h1); font-weight: 700; }
@@ -54,6 +56,13 @@ h3 { font-size: var(--fs-h3); font-weight: 600; }
 h4 { font-size: var(--fs-h4); font-weight: 600; }
 
 p { max-width: 70ch; line-height: var(--lh-normal); }
+
+/* Body copy: avoid a single leftover word on the last line, and allow
+   hyphenation for long German compounds. Requires <html lang="de">. */
+p, li, dd, figcaption, blockquote, summary {
+  text-wrap: pretty;
+  hyphens: auto;
+}
 
 ::selection { background-color: var(--c-primary); color: var(--c-white); }
 
