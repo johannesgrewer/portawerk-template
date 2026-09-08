@@ -18,3 +18,12 @@
 # 2) Nur wenn TwoClickEmbed genutzt wird, die Embed-Hosts ergaenzen:
 #    Google Maps:  frame-src https://www.google.com ;  img-src ... https://maps.gstatic.com
 #    YouTube:      frame-src https://www.youtube-nocookie.com
+
+# 3) Pitch-Vorschau: Die PortaWerk-Leiste laedt leiste.js UND leiste.css von
+#    cockpit.portawerk.de und meldet Klicks dorthin. Es braucht also alle drei
+#    Direktiven, style-src wird leicht vergessen. Dann laedt die Leiste
+#    ungestylt und sagt es nur in der Browserkonsole:
+#      script-src ... https://cockpit.portawerk.de
+#      style-src  ... https://cockpit.portawerk.de
+#      connect-src ... https://cockpit.portawerk.de
+#    Beim Livegang wieder entfernen.

@@ -28,7 +28,7 @@ const ogUrl = new URL(ogImage, site.domain).href;
 <link rel="canonical" href={canonical} />
 {noindex && <meta name="robots" content="noindex, nofollow" />}
 
-<!-- Open Graph -->
+{/* Open Graph */}
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogUrl} />
@@ -37,5 +37,5 @@ const ogUrl = new URL(ogImage, site.domain).href;
 <meta property="og:locale" content="de_DE" />
 <meta property="og:site_name" content={site.name} />
 
-<!-- Twitter -->
+{/* Twitter */}
 <meta name="twitter:card" content="summary_large_image" />

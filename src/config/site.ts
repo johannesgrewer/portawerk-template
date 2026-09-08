@@ -5,8 +5,11 @@
  */
 
 export interface SiteConfig {
-  /** Firmenname */
+  /** Firmenname, vollstaendig mit Rechtsform */
   name: string;
+  /** Kurzform fuer die Kopfzeile, optional. Die Rechtsform braucht dort
+   *  niemand, auf schmalen Schirmen frisst sie die ganze Breite. */
+  nameKurz?: string;
   /** Kurzer Slogan / Claim */
   slogan: string;
   /** Sprache (ISO), Default de */
@@ -72,6 +75,7 @@ export interface SiteConfig {
  */
 export const site: SiteConfig = {
   name: '[FIRMENNAME]',
+  nameKurz: '[FIRMENNAME OHNE RECHTSFORM]',
   slogan: '[SLOGAN]',
   lang: 'de',
   domain: 'https://example.com', // TODO: echte Kundendomain (muss mit astro.config site uebereinstimmen)

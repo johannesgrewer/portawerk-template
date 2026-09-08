@@ -27,7 +27,7 @@ const {
 <header class:list={['pw-header', { 'is-sticky': sticky }]}>
   <div class="container pw-header-inner">
     <a href="/" class="pw-logo" aria-label={`${site.name} — zur Startseite`}>
-      {logo ? <img src={logo} alt={site.name} height="40" width="auto" /> : <span>{site.name}</span>}
+      {logo ? <img src={logo} alt={site.name} height="40" width="auto" /> : <span>{site.nameKurz ?? site.name}</span>}
     </a>
 
     <nav class="pw-nav" aria-label="Hauptnavigation" id="pw-nav">
@@ -61,12 +61,12 @@ const {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-md);
-    min-height: 64px;
+    min-height: var(--header-h);
   }
 
   .pw-logo {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: var(--fw-display-strong, 700);
     font-size: 1.25rem;
     color: var(--c-text);
     flex-shrink: 0;
@@ -118,7 +118,7 @@ const {
     .pw-burger { display: flex; }
     .pw-nav {
       position: absolute;
-      top: 64px;
+      top: var(--header-h);
       left: 0;
       right: 0;
       background: var(--c-bg);

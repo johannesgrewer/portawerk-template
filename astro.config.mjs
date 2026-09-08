@@ -11,8 +11,10 @@ export default defineConfig({
   output: 'static',
   integrations: [sitemap()],
 
-  // Astro 7 stellt compressHTML auf 'jsx' um. Dabei koennen Leerzeichen
-  // zwischen Inline-Elementen wegfallen, dann klebt Text am Link. Tritt das
-  // auf, entweder {" "} setzen oder hier auf true zurueckstellen:
-  // compressHTML: true,
+  // Astro 7 stellt compressHTML auf 'jsx' um. Dabei fallen Leerzeichen
+  // zwischen Inline-Elementen weg, dann klebt Text am Link ("unter0651 ...").
+  // Bei Augusta Immobilien am 08.09.2026 genau so passiert. Deshalb hier
+  // standardmaessig die alte Kompression. Wer 'jsx' braucht, setzt die Zeile
+  // weg und schreibt an den betroffenen Stellen {" "}.
+  compressHTML: true,
 });

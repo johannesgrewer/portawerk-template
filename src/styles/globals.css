@@ -20,7 +20,8 @@ html {
 }
 
 section[id] {
-  scroll-margin-top: 80px;
+  /* etwas mehr als die Kopfzeile, damit die Ueberschrift nicht daran klebt */
+  scroll-margin-top: calc(var(--header-h, 64px) + 16px);
 }
 
 body {
@@ -50,10 +51,10 @@ h1, h2, h3, h4, h5, h6 {
   overflow-wrap: break-word;
 }
 
-h1 { font-size: var(--fs-h1); font-weight: 700; }
-h2 { font-size: var(--fs-h2); font-weight: 600; }
-h3 { font-size: var(--fs-h3); font-weight: 600; }
-h4 { font-size: var(--fs-h4); font-weight: 600; }
+h1 { font-size: var(--fs-h1); font-weight: var(--fw-display-strong, 700); }
+h2 { font-size: var(--fs-h2); font-weight: var(--fw-display, 600); }
+h3 { font-size: var(--fs-h3); font-weight: var(--fw-display, 600); }
+h4 { font-size: var(--fs-h4); font-weight: var(--fw-display, 600); }
 
 p { max-width: 70ch; line-height: var(--lh-normal); }
 
