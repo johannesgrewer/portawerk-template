@@ -3,8 +3,8 @@
 ## Kontext
 - **Kunde:** [Name], [Branche], [Standort]
 - **Agentur:** PortaWerk (portawerk.de)
-- **Stack:** Astro 7 (static) · Cloudflare Workers mit Static Assets · CSS Custom Properties · [Fonts] (self-hosted) · Kontaktformular als `/api/kontakt` im selben Worker (Brevo) · Cloudflare Web Analytics
-  - *Kein Tailwind / Supabase / Resend / Vercel / Umami.*
+- **Stack:** Astro 7 (static) · Cloudflare Workers mit Static Assets · CSS Custom Properties · [Fonts] (self-hosted) · Kontaktformular als `/api/kontakt` im selben Worker (Brevo) · Pirsch Analytics
+  - *Kein Tailwind / Supabase / Resend / Vercel / Umami / Plausible / Cloudflare Web Analytics.*
 
 ## Design
 - **Stimmung:** [aus PRB]
@@ -28,9 +28,9 @@
 - **Icons immer aus dem Lucide-Set**, nie selbst als SVG zeichnen: `npm i lucide-astro`, dann `import Wifi from 'lucide-astro/Wifi'` (ohne `.astro`-Endung, sonst bricht der Build). Rendert als Inline-SVG, lädt nichts nach.
 
 ## Analytics
-Cloudflare Web Analytics, cookielos und ohne Einwilligungspflicht. Liegt die Zone bei Cloudflare, reicht die **automatische Injektion** im Dashboard, dann bleibt `cfAnalyticsToken` in `site.ts` leer und es kommt kein Skript in den Code. Nur für Seiten außerhalb der Cloudflare-Zone dort den Site-Token eintragen.
+Pirsch (Emvi Software GmbH, gehostet in Deutschland), cookielos und ohne Einwilligungspflicht. Einbau über `src/components/Analytics.astro`, der Identifikationscode kommt aus `PUBLIC_PIRSCH_CODE` in `.env`. Fehlt die Variable, wird nichts gerendert und der Build warnt laut. So bleiben Pitch-Vorschauen auf portawerk.de-Subdomains ohne Zählung; beim Deliver wird die Kundendomain in Pirsch angelegt und der Code eingetragen (lokal und in den Cloudflare-Build-Variablen).
 
-Grenze, die man kennen muss: Cloudflare hält nur 7 Tage ungefiltert vor, danach wird auf rund 10 Prozent aggregiert. Für Halbjahresberichte reicht das nur eingeschränkt.
+**Event-Standard** (`src/lib/tracking.ts`, zwischen Projekten unverändert kopiert): `Anruf`, `WhatsApp`, `Mail`, `Formular`, `Route`, `Termin`. Bestehende Links bekommen `class={evt(EVENTS.ANRUF)}`, neue Links nutzen `TrackedLink`. Formular-Weiterleitung über `trackThenGo()`. CSP in `public/_headers` erlaubt `https://api.pirsch.io` in script-src und connect-src; wird die CSP auch im Worker gesetzt, dort ebenfalls.
 
 ## Hosting
 Cloudflare Worker mit Static Assets (`wrangler.jsonc`), **nicht** Cloudflare Pages. Pages wird von Cloudflare nur noch gepflegt.
@@ -41,8 +41,9 @@ Cloudflare Worker mit Static Assets (`wrangler.jsonc`), **nicht** Cloudflare Pag
 
 ## Key Files
 - `src/config/tokens.css` — Theme (Farben, Fonts, Skalen) = Single Source
-- `src/config/site.ts` — alle Kundendaten (Name, Adresse, Kontakt, Domain, cfAnalyticsToken, contactEndpoint, nav, turnstileSiteKey)
-- `src/layouts/BaseLayout.astro` — Gerüst; SEO via `src/seo/Seo.astro`, JSON-LD via `src/seo/LocalBusiness.astro`
+- `src/config/site.ts` — alle Kundendaten (Name, Adresse, Kontakt, Domain, contactEndpoint, nav, turnstileSiteKey)
+- `src/layouts/BaseLayout.astro` — Gerüst; SEO via `src/seo/Seo.astro`, JSON-LD via `src/seo/LocalBusiness.astro`, Analytics via `src/components/Analytics.astro`
+- `src/lib/tracking.ts` + `src/components/TrackedLink.astro` — Pirsch-Event-Standard (Anruf, WhatsApp, Mail, Formular, Route, Termin)
 - `src/components/` — Fundament-Komponenten (Header, Footer, Section, ContactForm, …)
 - `wrangler.jsonc` — Deploy-Konfiguration, enthält die Anleitung für `/api/kontakt`
 - `public/_headers` — Security-Header + CSP

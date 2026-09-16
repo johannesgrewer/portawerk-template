@@ -1,0 +1,32 @@
+---
+// Pirsch Analytics — cookiefrei, kein Consent-Banner noetig. Seit 16.09.2026
+// statt Plausible (Emvi Software GmbH, gehostet in Deutschland).
+// Der Identifikationscode kommt aus PUBLIC_PIRSCH_CODE, damit diese Komponente
+// zwischen Projekten unveraendert kopiert werden kann. Fehlt die Variable, wird
+// nichts gerendert und die Seite laeuft ohne Tracking weiter.
+const siteCode = import.meta.env.PUBLIC_PIRSCH_CODE;
+
+// Am 17.08.2026 fiel auf: Die Live-Seite trug die Event-Markierungen an Telefon-
+// und Mail-Links, aber kein Analytics-Skript. Ursache war ein Deploy aus einer
+// Umgebung ohne .env — die Bedingung unten rendert dann stillschweigend nichts,
+// und der Ausfall faellt niemandem auf, weil die Seite normal aussieht.
+// Deshalb wird das Fehlen laut. Die Zeile steht im Build-Log und ist der
+// einzige Hinweis, bevor Wochen an Besucherdaten verloren gehen.
+if (!siteCode) {
+  console.warn(
+    '\n[Analytics] PUBLIC_PIRSCH_CODE fehlt — die Seite wird OHNE Tracking gebaut.\n' +
+    '            Wenn dieser Build deployt wird, verschwindet Pirsch von der Live-Seite.\n' +
+    '            Gegenprobe nach dem Deploy: curl -s https://DOMAIN/ | grep -c api.pirsch.io/pa.js\n'
+  );
+}
+---
+{siteCode && (
+  <>
+    <link rel="preconnect" href="https://api.pirsch.io" />
+    {/* pa.js zaehlt Seitenaufrufe und liest Klick-Events aus CSS-Klassen der
+        Form `pirsch-event=Name` (siehe lib/tracking.ts). Kein Init-Snippet
+        noetig: window.pirsch existiert erst, wenn das Skript geladen ist, und
+        track() in tracking.ts prueft genau das. */}
+    <script is:inline defer src="https://api.pirsch.io/pa.js" id="pianjs" data-code={siteCode}></script>
+  </>
+)}

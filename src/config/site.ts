@@ -40,12 +40,6 @@ export interface SiteConfig {
    *  (z.B. "Plumber", "Restaurant", "BeautySalon", "HomeAndConstructionBusiness") */
   businessType: string;
 
-  /** Cloudflare Web Analytics Site-Token (oeffentlich, cookielos).
-   *  Leer lassen, wenn die Zone bei Cloudflare liegt — dann uebernimmt die
-   *  automatische Injektion im Dashboard das Einbinden. Nur fuer Seiten
-   *  ausserhalb von Cloudflare hier den Token aus "Manage site" eintragen. */
-  cfAnalyticsToken: string;
-
   /** Oeffentliche URL des Form-Workers (kein Secret) */
   contactEndpoint: string;
 
@@ -98,7 +92,6 @@ export const site: SiteConfig = {
   // geo: { lat: 0, lng: 0 },
 
   businessType: 'LocalBusiness',   // praeziser Schema.org-Typ wenn moeglich
-  cfAnalyticsToken: '',            // leer = automatische Injektion via Cloudflare-Dashboard
   contactEndpoint: '/api/kontakt', // gleicher Worker, siehe wrangler.jsonc
   turnstileSiteKey: '',            // Site-Key aus dem Turnstile-Dashboard, sonst leer
 
