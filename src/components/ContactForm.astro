@@ -61,10 +61,12 @@ const turnstileKey = site.turnstileSiteKey?.trim() || '';
     </div>
   ))}
 
-  {/* Honeypot — fuer Menschen unsichtbar, fuer Bots verlockend (Feldname laut Worker-Vertrag: company) */}
+  {/* Honeypot — fuer Menschen unsichtbar (Feldname laut Worker-Vertrag: pw_kontrolle).
+      Nie company/Firma/website o. ae.: das fuellt die Ausfuellhilfe, dann
+      verschwinden echte Anfragen still (Vorfall HGS Becker, 16.10.2026). */}
   <div class="pw-hp" aria-hidden="true">
-    <label for="pw-company">Firma (bitte frei lassen)</label>
-    <input id="pw-company" name="company" type="text" tabindex="-1" autocomplete="off" />
+    <label for="pw-kontrolle">Bitte leer lassen</label>
+    <input id="pw-kontrolle" name="pw_kontrolle" type="text" tabindex="-1" autocomplete="off" data-1p-ignore data-lpignore="true" data-form-type="other" />
   </div>
 
   <div class="pw-field pw-consent-check">
