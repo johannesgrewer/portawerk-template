@@ -31,7 +31,8 @@
 - **Primary:** [Hex] · **Accent:** [Hex] · **Bg:** [Hex]
 
 ## Architektur — zwei Schichten
-- **Fundament (fest, wird geforkt):** BaseLayout, Seo, LocalBusiness (`@graph`), Header, Footer, ContactForm, TurnstileNachladen, Rechtstext, TwoClickEmbed, SkipToContent, tokens.css, site.ts, worker/index.ts, scripts/. Nicht pro Kunde neu erfinden.
+- **Fundament (fest, wird geforkt):** BaseLayout, Seo, LocalBusiness (`@graph`), Header (mit Vollbild-Menü unter 900 px), Footer, ContactForm, TurnstileNachladen, Rechtstext, TwoClickEmbed, SkipToContent, tokens.css, site.ts, worker/index.ts, scripts/. Nicht pro Kunde neu erfinden.
+- **Rohbauten (Technik fest, Optik frei, seit 18.10.2026):** `Kontakt.astro` (Telefon, Mail, Adresse mit Kartenlink, Öffnungszeiten, Karte per Zwei-Klick, Formular), `Fragen.astro` (`<details>`, kein FAQPage), `Oeffnungszeiten.astro`, `Telefonleiste.astro` (nur bei `site.notdienst`), `Kurzlink.astro` (Seiten aus `site.kurzlinks`). Optik per `class` und Tokens anpassen, die Technik nicht neu schreiben.
 - **Nicht mehr im Starter (seit 18.10.2026), bei Bedarf aus dem Toolkit holen:** Galerie mit Lightbox (`00_Toolkit/blocks/galerie/`), CookieConsent (`00_Toolkit/blocks/cookie-consent/`, nur bei einwilligungspflichtigem Dienst). `Section.astro` ist ersatzlos weg, in keinem Projekt genutzt.
 - **Haut (frei pro Kunde):** Hero + Content-Sektionen. Frei gestalten; Extraktion in die Toolkit-Bibliothek erst nach der Drittel-Regel (erst beim dritten ähnlichen Fall).
 
@@ -46,7 +47,9 @@
 - **Inhalte nie allein per JS einblenden.** `.animate-on-scroll` greift nur unter `html.js`, damit ohne JavaScript nichts unsichtbar stehen bleibt.
 - **Icons immer aus dem Lucide-Set**, nie selbst als SVG zeichnen. Installiert ist das offizielle Paket `@lucide/astro`: `import { Phone } from '@lucide/astro'`, dann `<Phone size={22} aria-hidden="true" />`. Rendert als Inline-SVG, lädt nichts nach. Nicht `lucide-astro` (alter Name) dazuinstallieren.
 - **Kein `FAQPage`-Schema.** Das Ergebnis gibt es seit 07.05.2026 nicht mehr. Fragen sichtbar als `<details>` bauen, ohne Auszeichnung.
-- **Jede neue `noindex`-Seite** (`/bewerten`, `/stoerung` …) auch in den Sitemap-Filter in `astro.config.mjs`.
+- **Jede neue `noindex`-Seite** in `NOINDEX` in `astro.config.mjs`. Kurzlinks aus `site.kurzlinks` stehen dort automatisch.
+- **Telefonleiste nur bei Notdienst-Betrieben** (Entscheidung JG, 18.10.2026): `notdienst: true` in `site.ts`. Den Anruf-Knopf im Hero mit `data-anruf-primaer` markieren, dann erscheint die Leiste erst, wenn er aus dem Bild ist.
+- **Öffnungszeiten nur in `src/inhalte/oeffnungszeiten.json`** (je Tag Zeitfenster, leer = geschlossen, rund um die Uhr = 00:00 bis 24:00). Anzeige und Schema kommen beide daraus, nirgends sonst Zeiten hart eintragen.
 
 ## Analytics
 Pirsch (Emvi Software GmbH, gehostet in Deutschland), **serverseitig** über `@portawerk/messung` in `worker/index.ts`. Im Browser läuft kein Skript, es gibt kein `pa.js`, kein `api.pirsch.io` in der CSP und keine Klickzählung (Telefon, Mail). Gezählt werden Seitenaufrufe und, sobald das Formular eingebaut ist, zugestellte Anfragen (`ereignisMelden(..., 'Formular')`).
@@ -76,11 +79,13 @@ Cloudflare Worker mit Static Assets (`wrangler.jsonc`), **nicht** Cloudflare Pag
 
 ## Key Files
 - `src/config/tokens.css` — Theme (Farben, Fonts, Skalen) = Single Source
-- `src/config/site.ts` — alle Kundendaten (Name, Adresse, Kontakt, Domain, `vorschau`, Logo mit Maßen, Öffnungszeiten für Anzeige und Schema, Einsatzgebiet, Google-Profil, nav, turnstileSiteKey)
+- `src/config/site.ts` — alle Kundendaten (Name, Adresse, Kontakt, Domain, `vorschau`, Logo mit Maßen, Einsatzgebiet, Google-Profil, nav, turnstileSiteKey) und die Schalter `notdienst`, `kurzlinks`, `pitchLeiste` (beim Livegang löschen, die CSP-Freigabe für das Cockpit fällt damit weg)
+- `src/inhalte/oeffnungszeiten.json` + `src/lib/oeffnungszeiten.ts` — Öffnungszeiten, eine Quelle für Anzeige und Schema, später im Editor pflegbar
 - `src/layouts/BaseLayout.astro` — Gerüst; SEO via `src/seo/Seo.astro`, JSON-LD via `src/seo/LocalBusiness.astro`
 - `worker/index.ts` — Worker-Einstieg (siehe Hosting)
 - `src/config/sicherheit.ts` — Security-Header + CSP für alles, was durch den Worker geht, plus strenge Header für `/api`
-- `src/components/` — Fundament-Komponenten (Header, Footer, ContactForm, TurnstileNachladen, Rechtstext, …)
+- `src/components/` — Fundament und Rohbauten (Header, Footer, ContactForm, TurnstileNachladen, Rechtstext, Kontakt, Fragen, Oeffnungszeiten, Telefonleiste, Kurzlink, …)
+- `src/pages/[kurzlink].astro` — legt die Kurzlink-Seiten aus `site.kurzlinks` an
 - `src/pages/site.webmanifest.ts` — Web-Manifest, beim Bauen aus `site.ts`
 - `rechtstexte.config.mjs` — Pflichtangaben für die Rechtstexte, Schlüsseldatei für `npm run rechtstexte`
 - `wrangler.jsonc` — Deploy-Konfiguration, vorbereitete Blöcke für Formular, Rechtstexte, Kundendomain
@@ -96,7 +101,8 @@ Wählt der Kunde nach dem Livegang die Übergabe, bekommt er den Editor zum Selb
 ## Offene Punkte (pro Fork)
 - [ ] Versions-Check: `npm view astro version` gegen `package.json` halten
 - [ ] `config/tokens.css`: `@font-face` aktivieren + Kundenfarben statt Default-Theme
-- [ ] `config/site.ts`: alle Kundendaten befüllen, `vorschau` auf die Vorschau-Subdomain, `themeFarbe` = `--c-bg`
+- [ ] `config/site.ts`: alle Kundendaten befüllen, `vorschau` auf die Vorschau-Subdomain, `themeFarbe` = `--c-bg`, bei Notdienst `notdienst: true`, `pitchLeiste` mit Token
+- [ ] `src/inhalte/oeffnungszeiten.json`: bestätigte Zeiten eintragen
 - [ ] `astro.config.mjs` `site` + `robots.txt` auf Kundendomain
 - [ ] `wrangler.jsonc`: `projekt-slug` in `name` und Route ersetzen
 - [ ] `BaseLayout.astro`: Font-Preload aktivieren
@@ -110,15 +116,8 @@ Wählt der Kunde nach dem Livegang die Übergabe, bekommt er den Editor zum Selb
 ## Nächste Ausbaustufen des Starters (Auswertung 18.10.2026, noch nicht gebaut)
 Quelle: `00_Toolkit/starters/STARTER_AUSWERTUNG_2026-10-18.md`.
 
-**Sollte (Rohbauten für das, was jedes Projekt neu baut):**
-- Kontakt-Sektion als Rohbau (Telefon, Mail, Adresse als Kartenlink, Öffnungszeiten, Karte per Zwei-Klick, Formular), Vorlage Augusta + HGS-Formular
-- FAQ-Baustein mit `<details>`, ohne `FAQPage`, erste Frage offen (Vorlage HGS `Fragen.astro`)
-- Telefonleiste unten per Schalter in `site.ts` (Vorlage HGS `NotrufLeiste.astro`). Offene Designfrage: Standard oder nur bei Notdienst-Betrieben
-- Kurzlink-Baustein und `/bewerten` (Vorlage HGS `Kurzlink.astro`)
-- Öffnungszeiten als Datei (`src/inhalte/oeffnungszeiten.json`), speist Anzeige, Schema und den Editor (Dockner + Ordnung)
-- Mobilmenü als Vollbild-`<dialog>` (Vorlage HGS `Header.astro`)
-- Pitch-Leiste per Schalter, nur ab 900 px (Vorlage HGS `BaseLayout.astro`)
-- Rauchtest und Co. zentral aus `Portawerk/wartung` holen statt kopieren
+**Sollte:** am 18.10.2026 gebaut (Kontakt, Fragen, Telefonleiste nur bei Notdienst, Kurzlinks, Öffnungszeiten als Datei, Vollbild-Menü, Pitch-Leiste per Schalter). Offen davon nur:
+- Rauchtest und Co. zentral aus `Portawerk/wartung` holen statt kopieren. Zurückgestellt (JG, 18.10.2026), weil es Commit, neuen Tag (v5) und Push im gemeinsamen Wartungs-Repo braucht. Bestand bliebe auf v2.
 
 **Kann (bei Bedarf, außerhalb des Starters):**
 - Live-Bewertungen über `@portawerk/bewertungen` als Erweiterungsweg (braucht den Adapter)

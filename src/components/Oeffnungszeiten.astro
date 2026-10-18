@@ -1,0 +1,49 @@
+---
+/**
+ * Oeffnungszeiten.astro — Anzeige aus src/inhalte/oeffnungszeiten.json.
+ * Tage mit gleichen Zeiten stehen in einer Zeile (Mo–Fr). Dieselbe Datei
+ * speist das Schema, Anzeige und Suchmaschine koennen nicht auseinanderlaufen.
+ * Optik bewusst schlicht, pro Kunde ueber eine Klasse von aussen anpassen.
+ */
+import { anzeigeZeilen, hinweise } from '../lib/oeffnungszeiten';
+
+interface Props {
+  /** Ruhetage als "geschlossen" mit anzeigen */
+  mitGeschlossen?: boolean;
+  class?: string;
+}
+
+const { mitGeschlossen = true, class: klasse } = Astro.props;
+const zeilen = anzeigeZeilen(mitGeschlossen);
+const zusatz = hinweise();
+---
+<div class:list={['pw-zeiten', klasse]}>
+  <dl>
+    {zeilen.map((zeile) => (
+      <div class:list={['pw-zeiten__zeile', { 'ist-zu': zeile.geschlossen }]}>
+        <dt>{zeile.tage}</dt>
+        <dd>{zeile.zeiten}</dd>
+      </div>
+    ))}
+  </dl>
+  {zusatz.map((text) => <p class="pw-zeiten__hinweis">{text}</p>)}
+</div>
+
+<style>
+  .pw-zeiten dl { margin: 0; }
+  .pw-zeiten__zeile {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding-block: 0.4rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .pw-zeiten__zeile dt { font-weight: 600; }
+  .pw-zeiten__zeile dd { margin: 0; text-align: right; }
+  .pw-zeiten__zeile.ist-zu dd { color: var(--c-text-muted); }
+  .pw-zeiten__hinweis {
+    margin-top: var(--space-sm);
+    font-size: var(--fs-small);
+    color: var(--c-text-muted);
+  }
+</style>

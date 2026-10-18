@@ -4,7 +4,7 @@
  * @graph mit festen Kennungen (Vorlage HGS Becker, 17.10.2026):
  *
  *   #business     der Betrieb: Anschrift, Telefon international, Logo,
- *                 Oeffnungszeiten, Einsatzgebiet, sameAs (Profile, die
+ *                 Oeffnungszeiten (aus src/inhalte/oeffnungszeiten.json), Einsatzgebiet, sameAs (Profile, die
  *                 denselben Betrieb meinen; Grundlage dafuer, dass ChatGPT
  *                 und Perplexity ihn als einen erkennen)
  *   #website      NUR AUF DER STARTSEITE (Google-Regelwerk), Herausgeber
@@ -20,6 +20,7 @@
  *     Auszeichnung weglassen.
  */
 import { site } from '../config/site';
+import { schemaBloecke } from '../lib/oeffnungszeiten';
 
 interface Props {
   type?: string;
@@ -48,6 +49,8 @@ const profile = [
   ...(site.socials?.map((s) => s.href) ?? []),
   ...(site.googleProfil ? [site.googleProfil] : []),
 ];
+
+const oeffnungszeiten = schemaBloecke();
 
 const business: Record<string, unknown> = {
   '@type': type,
@@ -83,16 +86,7 @@ const business: Record<string, unknown> = {
         })),
       }
     : {}),
-  ...(site.oeffnungszeitenSchema?.length
-    ? {
-        openingHoursSpecification: site.oeffnungszeitenSchema.map((block) => ({
-          '@type': 'OpeningHoursSpecification',
-          dayOfWeek: block.tage,
-          opens: block.von,
-          closes: block.bis,
-        })),
-      }
-    : {}),
+  ...(oeffnungszeiten.length ? { openingHoursSpecification: oeffnungszeiten } : {}),
   ...(profile.length ? { sameAs: profile } : {}),
 };
 

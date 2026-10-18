@@ -1,0 +1,142 @@
+---
+/**
+ * Kontakt.astro — Rohbau der Kontakt-Sektion (Vorlage Augusta + HGS-Formular).
+ *
+ * TECHNIK FEST, OPTIK FREI. Fest sind: Telefon und Mail als Links, Adresse als
+ * <address> mit Link zur Kartensuche, Oeffnungszeiten aus der Datei, Karte nur
+ * per Zwei-Klick, daneben das gehaertete Formular. Die Gestaltung (Farben,
+ * Raster, Bild daneben ...) wird pro Kunde frei gebaut, dafuer Klassen und
+ * den Slot nutzen statt die Technik neu zu schreiben.
+ *
+ * Kartenlink statt eingebetteter Karte als Standard: Ein Link laedt nichts
+ * von Google, bis jemand klickt. Die eingebettete Karte (kartenSrc) laeuft
+ * ueber TwoClickEmbed, dann in sicherheit.ts UND public/_headers
+ * frame-src https://www.google.com ergaenzen.
+ */
+import ContactForm from './ContactForm.astro';
+import Oeffnungszeiten from './Oeffnungszeiten.astro';
+import TwoClickEmbed from './TwoClickEmbed.astro';
+import { site } from '../config/site';
+
+interface Props {
+  id?: string;
+  titel?: string;
+  /** Satz unter der Ueberschrift, optional */
+  einleitung?: string;
+  /** Embed-URL von Google Maps fuer die Zwei-Klick-Karte, optional */
+  kartenSrc?: string;
+  /** false = nur Kontaktdaten, kein Formular */
+  formular?: boolean;
+  /** Oeffnungszeiten zeigen */
+  zeiten?: boolean;
+  class?: string;
+}
+
+const {
+  id = 'kontakt',
+  titel = 'Kontakt',
+  einleitung,
+  kartenSrc,
+  formular = true,
+  zeiten = true,
+  class: klasse,
+} = Astro.props;
+
+const adresseText = `${site.address.strasse}, ${site.address.plz} ${site.address.ort}`;
+// Link zur Kartensuche, oeffnet Google Maps erst beim Klick (kein Einbetten).
+const kartenLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${adresseText}`)}`;
+---
+<section id={id} class:list={['section', 'pw-kontakt', klasse]}>
+  <div class="container">
+    <h2>{titel}</h2>
+    {einleitung && <p class="pw-kontakt__einleitung">{einleitung}</p>}
+
+    <div class:list={['pw-kontakt__raster', { 'ohne-formular': !formular }]}>
+      <div class="pw-kontakt__daten">
+        <ul class="pw-kontakt__wege">
+          <li>
+            <span class="pw-kontakt__label">Telefon</span>
+            <a href={`tel:+${site.telefonRaw}`}>{site.telefon}</a>
+          </li>
+          <li>
+            <span class="pw-kontakt__label">E-Mail</span>
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </li>
+          <li>
+            <span class="pw-kontakt__label">Adresse</span>
+            <address>
+              <a href={kartenLink} target="_blank" rel="noopener">
+                {site.address.strasse}<br />{site.address.plz} {site.address.ort}
+              </a>
+            </address>
+          </li>
+        </ul>
+
+        {zeiten && (
+          <div class="pw-kontakt__zeiten">
+            <h3>Öffnungszeiten</h3>
+            <Oeffnungszeiten />
+          </div>
+        )}
+
+        <slot />
+
+        {kartenSrc && (
+          <div class="pw-kontakt__karte">
+            <TwoClickEmbed type="map" src={kartenSrc} title={`Karte: ${site.name}`} />
+          </div>
+        )}
+      </div>
+
+      {formular && (
+        <div class="pw-kontakt__formular">
+          <ContactForm />
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pw-kontakt__einleitung { margin-top: var(--space-sm); color: var(--c-text-muted); }
+
+  .pw-kontakt__raster {
+    display: grid;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+  @media (min-width: 900px) {
+    .pw-kontakt__raster:not(.ohne-formular) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); }
+  }
+
+  .pw-kontakt__wege { list-style: none; display: grid; gap: var(--space-md); }
+  .pw-kontakt__wege li { display: flex; flex-direction: column; gap: 0.15rem; }
+  .pw-kontakt__label {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--c-text-muted);
+  }
+  .pw-kontakt__wege a {
+    /* 44 px Tippflaeche, auch wenn die Schrift klein ist. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    align-self: flex-start;
+    font-size: var(--fs-h4);
+    font-weight: 600;
+    color: var(--c-text);
+    text-decoration: underline;
+    text-decoration-color: var(--c-border);
+    text-underline-offset: 4px;
+  }
+  .pw-kontakt__wege a:hover { text-decoration-color: currentColor; }
+  .pw-kontakt__wege address { font-style: normal; }
+  .pw-kontakt__wege address a { line-height: var(--lh-snug); }
+
+  .pw-kontakt__zeiten { margin-top: var(--space-xl); }
+  .pw-kontakt__zeiten h3 { font-size: var(--fs-h4); margin-bottom: var(--space-sm); }
+
+  .pw-kontakt__karte { margin-top: var(--space-xl); }
+</style>

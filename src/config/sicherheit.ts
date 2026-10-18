@@ -8,14 +8,22 @@
  * Kein api.pirsch.io: gezaehlt wird serverseitig (@portawerk/messung).
  * Turnstile braucht challenges.cloudflare.com in script-src, connect-src und
  * frame-src. Das Formular postet an /api/kontakt auf derselben Herkunft.
+ *
+ * Pitch-Leiste: cockpit.portawerk.de steht nur drin, solange site.pitchLeiste
+ * gesetzt ist. Faellt der Eintrag beim Livegang weg, schliesst sich die
+ * Freigabe von selbst.
  */
+import { site } from './site';
+
+const COCKPIT = site.pitchLeiste ? ' https://cockpit.portawerk.de' : '';
+
 export const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
-  "style-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com${COCKPIT}`,
+  `style-src 'self' 'unsafe-inline'${COCKPIT}`,
   "font-src 'self'",
   "img-src 'self' data:",
-  "connect-src 'self' https://challenges.cloudflare.com",
+  `connect-src 'self' https://challenges.cloudflare.com${COCKPIT}`,
   "frame-src https://challenges.cloudflare.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",

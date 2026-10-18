@@ -1,0 +1,21 @@
+---
+/**
+ * [kurzlink].astro — legt fuer jeden Eintrag in site.kurzlinks eine
+ * Weiterleitungsseite an (z. B. /bewerten/). Ohne Eintraege entsteht keine
+ * Seite. Feste Seiten mit demselben Namen gehen vor.
+ */
+import type { GetStaticPaths } from 'astro';
+import Kurzlink from '../components/Kurzlink.astro';
+import { site } from '../config/site';
+
+export const getStaticPaths = (() =>
+  (site.kurzlinks ?? [])
+    .filter((eintrag) => eintrag.pfad && eintrag.ziel)
+    .map((eintrag) => ({
+      params: { kurzlink: eintrag.pfad.replace(/^\/+|\/+$/g, '') },
+      props: { ziel: eintrag.ziel, titel: eintrag.titel },
+    }))) satisfies GetStaticPaths;
+
+const { ziel, titel } = Astro.props;
+---
+<Kurzlink ziel={ziel} titel={titel} />

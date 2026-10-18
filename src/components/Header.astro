@@ -1,17 +1,25 @@
 ---
 /**
- * Header.astro — sticky Kopf mit Nav, CTA und mobilem Burger-Menue.
+ * Header.astro — sticky Kopf mit Nav, CTA und mobilem Vollbild-Menue.
  * Struktur fest, Optik ueber Tokens. Inhalt ueber Props.
- * a11y: <nav aria-label>, Burger als <button> mit aria-expanded/-controls.
  *
  * ANRUF AUF DEM HANDY: Unter 900 px steht ein Telefon-Knopf neben dem Burger,
  * auf jeder Breite. Bis 18.10.2026 verschwand der CTA unter 400 px, also auf
  * fast allen Handys, und mit ihm der kuerzeste Weg zum Betrieb. Unter 400 px
  * tritt jetzt der Text-Knopf zurueck, der Anruf bleibt.
  *
+ * VOLLBILD-MENUE UNTER 900 PX (Vorlage HGS, 16.10.2026): Der Burger oeffnet
+ * ein <dialog> per showModal() ueber dem ganzen Schirm. Warum <dialog>:
+ * - Es liegt in der obersten Ebene des Browsers, ueber jedem z-index. Eine
+ *   feste Telefonleiste unten kann es nicht ueberdecken.
+ * - Der Rest der Seite ist solange inert, der Fokus kann nicht dahinter
+ *   wandern, ohne eigene Fokusfalle.
+ * Ab 900 px ist es nie offen, der Desktop zeigt die Leiste. Ohne JavaScript
+ * bleibt es zu.
+ *
  * Logo aus site.logo mit echten Massen (width/height), damit nichts springt.
  */
-import { Phone } from '@lucide/astro';
+import { Phone, X } from '@lucide/astro';
 import { site } from '../config/site';
 
 interface NavLink { label: string; href: string; }
@@ -37,7 +45,7 @@ const {
       {logo ? <img src={logo.src} alt={site.name} width={logo.breite} height={logo.hoehe} /> : <span>{site.nameKurz ?? site.name}</span>}
     </a>
 
-    <nav class="pw-nav" aria-label="Hauptnavigation" id="pw-nav">
+    <nav class="pw-nav" aria-label="Hauptnavigation">
       <ul>
         {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
       </ul>
@@ -50,12 +58,37 @@ const {
       <a href={`tel:+${site.telefonRaw}`} class="pw-header-anruf" aria-label={`Anrufen: ${site.telefon}`}>
         <Phone size={22} stroke-width={2.2} aria-hidden="true" />
       </a>
-      <button class="pw-burger" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="pw-nav">
+      <button class="pw-burger" type="button" aria-label="Menü öffnen" aria-haspopup="dialog" aria-expanded="false" aria-controls="pw-menue">
         <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 </header>
+
+{/* Steht bewusst NEBEN dem header: Kennt ein alter Browser showModal() nicht,
+    laege es sonst im Stapelkontext der Kopfzeile. */}
+<dialog id="pw-menue" class="pw-menue" aria-label="Menü">
+  <div class="pw-menue__kopf">
+    <span class="pw-menue__marke">{site.nameKurz ?? site.name}</span>
+    <button type="button" class="pw-menue__zu" aria-label="Menü schließen" autofocus>
+      <X size={28} stroke-width={2} aria-hidden="true" />
+    </button>
+  </div>
+
+  <nav class="pw-menue__nav" aria-label="Hauptnavigation">
+    <ul>
+      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+    </ul>
+  </nav>
+
+  <div class="pw-menue__fuss">
+    <a href={`tel:+${site.telefonRaw}`} class="pw-menue__anruf">
+      <Phone size={22} stroke-width={2.2} aria-hidden="true" />
+      <span>{site.telefon}</span>
+    </a>
+    <a href={`mailto:${site.email}`}>{site.email}</a>
+  </div>
+</dialog>
 
 <style>
   .pw-header {
@@ -99,9 +132,11 @@ const {
 
   .pw-header-actions { display: flex; align-items: center; gap: var(--space-sm); }
 
-  /* Telefon-Knopf, nur unter 900 px sichtbar (siehe Kopf). 44 px Tippflaeche. */
+  /* Telefon-Knopf und Burger nur unter 900 px (siehe Kopf). 44 px Tippflaeche. */
+  .pw-header-anruf,
+  .pw-burger { display: none; }
+
   .pw-header-anruf {
-    display: none;
     align-items: center;
     justify-content: center;
     width: 44px;
@@ -114,7 +149,6 @@ const {
   .pw-header-anruf:hover { background: var(--c-surface-alt); }
 
   .pw-burger {
-    display: none;
     flex-direction: column;
     justify-content: center;
     gap: 5px;
@@ -130,59 +164,215 @@ const {
     width: 100%;
     background: var(--c-text);
     border-radius: 2px;
-    transition: transform var(--duration-fast) var(--ease-smooth),
-                opacity var(--duration-fast) var(--ease-smooth);
   }
-  .pw-burger[aria-expanded='true'] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .pw-burger[aria-expanded='true'] span:nth-child(2) { opacity: 0; }
-  .pw-burger[aria-expanded='true'] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-  /* ── Mobile ── */
   @media (max-width: 899px) {
-    .pw-burger { display: flex; }
+    .pw-nav { display: none; }
     .pw-header-anruf { display: inline-flex; }
-    .pw-nav {
-      position: absolute;
-      top: var(--header-h);
-      left: 0;
-      right: 0;
-      background: var(--c-bg);
-      border-bottom: 1px solid var(--c-border);
-      box-shadow: var(--shadow-md);
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height var(--duration-normal) var(--ease-out);
-    }
-    .pw-nav.is-open { max-height: 70vh; }
-    .pw-nav ul {
-      flex-direction: column;
-      gap: 0;
-      padding: var(--space-sm) var(--section-px);
-    }
-    .pw-nav li { border-bottom: 1px solid var(--c-border); }
-    .pw-nav li:last-child { border-bottom: none; }
-    .pw-nav a { display: block; padding: var(--space-md) 0; }
+    .pw-burger { display: flex; }
     /* Unter 400 px tritt der Text-Knopf zurueck, der Telefon-Knopf bleibt. */
     @media (max-width: 400px) { .pw-header-cta { display: none; } }
+  }
+
+  /* ── Vollbild-Menue ──
+     Zu ist zu, auch in Browsern ohne <dialog>-Unterstuetzung. */
+  .pw-menue:not([open]) { display: none; }
+
+  .pw-menue {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: var(--space-md) var(--section-px) calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
+    border: none;
+    background: var(--c-bg);
+    color: var(--c-text);
+    overflow-y: auto;
+  }
+  .pw-menue[open] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    animation: pw-menue-auf 220ms var(--ease-out) backwards;
+  }
+  .pw-menue.ist-zu { animation: pw-menue-zu 200ms var(--ease-out) forwards; }
+  .pw-menue::backdrop { background: transparent; }
+
+  .pw-menue__kopf {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: calc(var(--header-h) - var(--space-md));
+  }
+  .pw-menue__marke {
+    font-family: var(--font-display);
+    font-weight: var(--fw-display-strong, 700);
+    font-size: 1.25rem;
+  }
+  .pw-menue__zu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    color: var(--c-text);
+  }
+
+  .pw-menue__nav ul { list-style: none; }
+  .pw-menue__nav a {
+    display: block;
+    padding-block: var(--space-sm);
+    font-family: var(--font-display);
+    font-weight: var(--fw-display-strong, 700);
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+    line-height: var(--lh-tight);
+    color: var(--c-text);
+  }
+  .pw-menue__nav a:hover,
+  .pw-menue__nav a[aria-current] { color: var(--c-primary); }
+
+  .pw-menue__fuss {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    font-size: var(--fs-small);
+  }
+  .pw-menue__fuss a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    color: var(--c-text-muted);
+  }
+  .pw-menue__anruf {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--c-text) !important;
+  }
+
+  @keyframes pw-menue-auf { from { opacity: 0; transform: translateY(-8px); } }
+  @keyframes pw-menue-zu { to { opacity: 0; transform: translateY(-8px); } }
+
+  /* Rest der Seite steht still, solange das Menue offen ist. */
+  :global(html.pw-menue-offen body) { overflow: hidden; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pw-menue[open], .pw-menue.ist-zu { animation: none; }
   }
 </style>
 
 <script>
+  // ── Vollbild-Menue unter 900 px (Ablauf wie HGS) ──
+  // Der Zustand liegt in einer eigenen Variable und nicht in menue.open: Ohne
+  // <dialog>-Unterstuetzung gibt es diese Eigenschaft nicht, dort wird das
+  // open-Attribut von Hand gesetzt.
   const burger = document.querySelector<HTMLButtonElement>('.pw-burger');
-  const nav = document.getElementById('pw-nav');
-  if (burger && nav) {
-    const setOpen = (open: boolean) => {
-      nav.classList.toggle('is-open', open);
-      burger.setAttribute('aria-expanded', String(open));
-      burger.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+  const menue = document.getElementById('pw-menue') as HTMLDialogElement | null;
+
+  if (burger && menue) {
+    const schliessenKnopf = menue.querySelector<HTMLButtonElement>('.pw-menue__zu');
+    const menueLinks = Array.from(menue.querySelectorAll<HTMLAnchorElement>('.pw-menue__nav a'));
+    const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const schmal = window.matchMedia('(max-width: 899px)');
+    const kannModal = typeof menue.showModal === 'function';
+    let istOffen = false;
+
+    const zustandSetzen = (offen: boolean) => {
+      istOffen = offen;
+      burger.setAttribute('aria-expanded', String(offen));
+      document.documentElement.classList.toggle('pw-menue-offen', offen);
     };
-    burger.addEventListener('click', () => setOpen(burger.getAttribute('aria-expanded') !== 'true'));
-    nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
-        setOpen(false);
-        burger.focus();
+
+    const oeffnen = () => {
+      if (istOffen) return;
+      menue.classList.remove('ist-zu');
+      try {
+        if (kannModal) menue.showModal();
+        else menue.setAttribute('open', '');
+      } catch {
+        menue.setAttribute('open', '');
       }
+      zustandSetzen(true);
+      // showModal() setzt den Fokus selbst (autofocus am X), sonst hier.
+      if (!kannModal) schliessenKnopf?.focus();
+    };
+
+    // Schliesst ohne Ausblenden. Die Sperre faellt sofort, damit ein
+    // Ankerlink auf eine scrollbare Seite trifft.
+    const sofortSchliessen = () => {
+      if (!istOffen) return;
+      menue.classList.remove('ist-zu');
+      zustandSetzen(false);
+      if (kannModal && menue.open) menue.close();
+      else menue.removeAttribute('open');
+      burger.focus({ preventScroll: true });
+    };
+
+    // Mit Ausblenden. Das Zeitlimit faengt den Fall ab, dass animationend
+    // ausbleibt (Tab im Hintergrund, Animation abgeschaltet).
+    const schliessen = () => {
+      if (!istOffen || menue.classList.contains('ist-zu')) return;
+      if (ruhig.matches) {
+        sofortSchliessen();
+        return;
+      }
+      let erledigt = false;
+      const fertig = () => {
+        if (erledigt) return;
+        erledigt = true;
+        menue.removeEventListener('animationend', beiAnimationsende);
+        sofortSchliessen();
+      };
+      const beiAnimationsende = (e: AnimationEvent) => {
+        if (e.target === menue) fertig();
+      };
+      menue.addEventListener('animationend', beiAnimationsende);
+      window.setTimeout(fertig, 320);
+      menue.classList.add('ist-zu');
+    };
+
+    burger.addEventListener('click', oeffnen);
+    schliessenKnopf?.addEventListener('click', schliessen);
+
+    // ESC: abgefangen, damit auch hier ausgeblendet wird.
+    menue.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      schliessen();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && istOffen) schliessen();
+    });
+    menue.addEventListener('close', () => {
+      if (istOffen) sofortSchliessen();
+    });
+
+    // Ankerlink auf dieser Seite: sofort zu, der Browser scrollt dann. Auf
+    // eine andere Seite bleibt das Menue stehen, bis sie da ist.
+    for (const link of menueLinks) {
+      link.addEventListener('click', () => {
+        try {
+          const ziel = new URL(link.href, window.location.href);
+          if (ziel.pathname === window.location.pathname) sofortSchliessen();
+        } catch {
+          sofortSchliessen();
+        }
+      });
+    }
+
+    // Zurueck-Knopf: Seite kommt aus dem Zwischenspeicher, samt offenem Menue.
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) sofortSchliessen();
+    });
+
+    // Fenster ueber 900 px gezogen: Dort gibt es kein Menue, also zu.
+    schmal.addEventListener('change', (e) => {
+      if (!e.matches) sofortSchliessen();
     });
   }
 </script>

@@ -4,12 +4,20 @@
  * Bindet Tokens, Base-CSS, SEO, Schema, Icons, Fonts, Skip-Link ein.
  * Gezaehlt wird serverseitig im Worker (worker/index.ts), nicht hier.
  * Genau eine H1 pro Seite kommt aus dem Seiteninhalt (Slot).
+ *
+ * Zwei Schalter aus site.ts:
+ * - notdienst: Telefonleiste unten auf dem Handy (Telefonleiste.astro)
+ * - pitchLeiste: PortaWerk-Leiste der Vorschau, NUR AB 900 PX. Auf dem Handy
+ *   verdeckte sie bei HGS die Telefonleiste und den halben ersten Schirm.
+ *   Beim Livegang den Eintrag in site.ts loeschen, damit ist sie weg und die
+ *   CSP-Freigabe (sicherheit.ts) gleich mit.
  */
 import '../config/tokens.css';
 import '../styles/globals.css';
 import Seo from '../seo/Seo.astro';
 import LocalBusiness from '../seo/LocalBusiness.astro';
 import SkipToContent from '../components/SkipToContent.astro';
+import Telefonleiste from '../components/Telefonleiste.astro';
 import { site } from '../config/site';
 
 interface Props {
@@ -36,6 +44,8 @@ const {
 const istStartseite = new URL(canonical).pathname === '/';
 const brotkrumenName =
   istStartseite || brotkrumen === false ? undefined : (brotkrumen ?? title.split(' | ')[0]);
+
+const leiste = site.pitchLeiste;
 ---
 <!doctype html>
 <html lang={site.lang}>
@@ -77,6 +87,8 @@ const brotkrumenName =
     <SkipToContent />
     <slot />
 
+    {site.notdienst && <Telefonleiste />}
+
     {/* IntersectionObserver fuer Scroll-Animationen (.animate-on-scroll) */}
     <script>
       const zielElemente = document.querySelectorAll('.animate-on-scroll');
@@ -97,5 +109,20 @@ const brotkrumenName =
         zielElemente.forEach((el) => observer.observe(el));
       }
     </script>
+
+    {leiste && (
+      <script is:inline define:vars={{ kunde: leiste.kunde, token: leiste.token, klassen: leiste.klassen ?? '' }}>
+        // Nur ab 900 px einhaengen, am Handy bleibt die Vorschau frei.
+        if (window.matchMedia('(min-width: 900px)').matches) {
+          const skript = document.createElement('script');
+          skript.src = 'https://cockpit.portawerk.de/leiste.js';
+          skript.defer = true;
+          skript.dataset.kunde = kunde;
+          skript.dataset.token = token;
+          if (klassen) skript.dataset.klassen = klassen;
+          document.body.appendChild(skript);
+        }
+      </script>
+    )}
   </body>
 </html>

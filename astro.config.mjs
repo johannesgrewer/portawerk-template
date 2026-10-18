@@ -1,6 +1,10 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { site as kunde } from './src/config/site.ts';
+
+// Seiten mit noindex: feste Seiten plus alle Kurzlinks aus site.ts.
+const NOINDEX = ['impressum', 'datenschutz', 'danke', ...(kunde.kurzlinks ?? []).map((k) => k.pfad.replace(/^\/+|\/+$/g, ''))];
 
 // Statisches Astro, deployt als Cloudflare Worker mit Static Assets (siehe
 // wrangler.jsonc). KEIN Adapter: Formular, Rechtstexte und Messung laufen in
@@ -16,9 +20,9 @@ export default defineConfig({
       // Datum des Baus, also des Deploys. Genauer geht es ohne CMS nicht.
       lastmod: new Date(),
       // Seiten mit noindex gehoeren nicht in die Sitemap, sonst meldet die
-      // Search Console einen Widerspruch. Jede neue noindex-Seite (/bewerten,
-      // /stoerung ...) hier ergaenzen.
-      filter: (seite) => !/\/(impressum|datenschutz|danke)\/$/.test(seite),
+      // Search Console einen Widerspruch. Kurzlinks kommen automatisch dazu,
+      // jede weitere noindex-Seite in NOINDEX oben ergaenzen.
+      filter: (seite) => !NOINDEX.some((pfad) => new URL(seite).pathname === `/${pfad}/`),
     }),
   ],
 

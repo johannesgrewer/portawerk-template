@@ -4,14 +4,14 @@
  * Beim Fork nur diese Datei (+ tokens.css) anpassen.
  */
 
-/** Ein Block Oeffnungszeiten fuer die strukturierten Daten. */
-export interface OeffnungszeitBlock {
-  /** Wochentage auf Englisch, wie Schema.org sie erwartet ('Monday' ...) */
-  tage: string[];
-  /** 'HH:MM' */
-  von: string;
-  /** 'HH:MM' */
-  bis: string;
+/** Gezaehlter Kurzlink auf der eigenen Domain, z. B. /bewerten fuer QR-Codes. */
+export interface Kurzlink {
+  /** Pfad ohne Schraegstriche, z. B. 'bewerten' */
+  pfad: string;
+  /** Ziel, absolut oder ab der Wurzel */
+  ziel: string;
+  /** Kurzer Titel, steht als Linktext, falls JavaScript fehlt */
+  titel: string;
 }
 
 export interface SiteConfig {
@@ -58,11 +58,28 @@ export interface SiteConfig {
   /** Telefon nur Ziffern inkl. Laendervorwahl, fuer tel:-Links (z.B. 4915112345678) */
   telefonRaw: string;
 
-  /** Oeffnungszeiten als Klartext-Zeilen fuer die Anzeige, optional */
-  oeffnungszeiten?: string[];
-  /** Dieselben Zeiten maschinenlesbar, speisen das Schema. Nur eintragen, was
-   *  der Kunde bestaetigt hat, und mit der Anzeige oben gleich halten. */
-  oeffnungszeitenSchema?: OeffnungszeitBlock[];
+  /* Oeffnungszeiten stehen NICHT hier, sondern in src/inhalte/oeffnungszeiten.json
+     (Anzeige und Schema aus einer Quelle, spaeter im Editor pflegbar). */
+
+  /** Notdienst-Betrieb: blendet auf dem Handy die Telefonleiste unten ein
+   *  (Telefonleiste.astro). Nur fuer Betriebe mit echtem Notdienst, sonst aus
+   *  (Entscheidung JG, 18.10.2026). */
+  notdienst?: boolean;
+
+  /** Gezaehlte Kurzlinks fuer gedruckte QR-Codes (Bewertungspaket). Jeder
+   *  Eintrag wird eine Weiterleitungsseite, noindex und nicht in der Sitemap. */
+  kurzlinks?: Kurzlink[];
+
+  /** PortaWerk-Leiste auf der Pitch-Vorschau (Varianten, Kommentare). Laedt nur
+   *  ab 900 px, die CSP gibt cockpit.portawerk.de nur frei, solange der Eintrag
+   *  steht. BEIM LIVEGANG LOESCHEN. Token-Abruf: /portawerk-pitch Phase 8. */
+  pitchLeiste?: {
+    kunde: string;
+    /** Schreib-Token des Pitches, darf im HTML stehen */
+    token: string;
+    /** JSON fuer data-klassen, optional */
+    klassen?: string;
+  };
 
   /** Geo-Koordinaten fuer LocalBusiness, optional. Erst nach bestaetigter
    *  Anschrift eintragen. */
@@ -133,12 +150,9 @@ export const site: SiteConfig = {
   telefon: '0000 000000',
   telefonRaw: '49000000000',
 
-  oeffnungszeiten: [
-    'Mo–Fr: 08:00–17:00 Uhr',
-  ],
-  // oeffnungszeitenSchema: [
-  //   { tage: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], von: '08:00', bis: '17:00' },
-  // ],
+  // notdienst: true,
+  // kurzlinks: [{ pfad: 'bewerten', ziel: 'https://search.google.com/local/writereview?placeid=...', titel: 'Bewertung bei Google schreiben' }],
+  // pitchLeiste: { kunde: 'projekt-slug', token: '...' },
 
   // geo: { lat: 0, lng: 0 },
 

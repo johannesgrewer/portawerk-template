@@ -9,7 +9,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import ContactForm from '../components/ContactForm.astro';
+import Kontakt from '../components/Kontakt.astro';
 import { site } from '../config/site';
 ---
 <BaseLayout
@@ -29,16 +29,15 @@ import { site } from '../config/site';
         <h1>{site.name}</h1>
         <p>{site.slogan}</p>
         <a href={site.cta.href} class="btn btn-primary">{site.cta.label}</a>
+        {/* data-anruf-primaer: Solange dieser Knopf im Bild ist, bleibt die
+            Telefonleiste (nur bei site.notdienst) unten weg. */}
+        <a href={`tel:+${site.telefonRaw}`} class="btn btn-secondary" data-anruf-primaer>{site.telefon}</a>
       </div>
     </section>
 
-    <section class="section bg-surface" id="kontakt">
-      <div class="container">
-        <h2>Kontakt</h2>
-        <p>Platzhalter-Kontaktsektion mit dem gehärteten Anfrageformular.</p>
-        <ContactForm />
-      </div>
-    </section>
+    {/* Rohbau: Technik fest, Optik pro Kunde frei. Fragen.astro bei Bedarf
+        davor einsetzen: <Fragen fragen={[{ frage: '...', antwort: '...' }]} /> */}
+    <Kontakt class="bg-surface" />
   </main>
   <Footer />
 </BaseLayout>

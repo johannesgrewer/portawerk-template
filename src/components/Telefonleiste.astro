@@ -1,0 +1,105 @@
+---
+/**
+ * Telefonleiste.astro — fester Anruf-Balken unten, nur auf dem Handy
+ * (Vorlage HGS NotrufLeiste). NUR FUER NOTDIENST-BETRIEBE (Entscheidung JG,
+ * 18.10.2026): eingebunden vom BaseLayout, sobald site.notdienst gesetzt ist.
+ *
+ * Wer mit einem Notfall auf dem Handy landet, soll die Nummer an jeder Stelle
+ * der Seite erreichen, ohne nach oben zu scrollen.
+ *
+ * Drei Dinge, die leicht schiefgehen:
+ * - Der Balken verdeckt sonst das Seitenende: Der Body bekommt unten genau die
+ *   Hoehe des Balkens als Innenabstand, dazu scroll-padding-bottom, damit ein
+ *   fokussierter Knopf beim Tabben nicht dahinter landet.
+ * - iPhone: Unter dem Balken liegt die Home-Leiste, env(safe-area-inset-bottom)
+ *   schiebt den Inhalt darueber.
+ * - Er erscheint erst, wenn der Anruf-Knopf im Hero aus dem Bild ist (Element
+ *   mit data-anruf-primaer im Hero setzen), sonst steht dieselbe Handlung
+ *   zweimal auf dem Schirm. Ohne JavaScript steht er dauerhaft da, die Nummer
+ *   darf nicht von einem Skript abhaengen.
+ */
+import { Phone } from '@lucide/astro';
+import { site } from '../config/site';
+---
+{/* aside mit Namen: Die Leiste steht ausserhalb von main und footer und waere
+    sonst in keinem Seitenbereich (axe "region"). */}
+<aside aria-label="Telefon">
+  <a class="pw-telefonleiste" href={`tel:+${site.telefonRaw}`} aria-label={`Anrufen: ${site.telefon}`}>
+    <Phone size={22} stroke-width={2.2} aria-hidden="true" />
+    <span class="pw-telefonleiste__nummer">{site.telefon}</span>
+  </a>
+</aside>
+
+<style>
+  /* Basisregel zuerst: grundsaetzlich aus, nur auf schmalen Schirmen an. */
+  .pw-telefonleiste { display: none; }
+
+  @media (max-width: 899px) {
+    .pw-telefonleiste {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      /* unter der Kopfzeile (100), das Menue liegt als <dialog> ohnehin ganz oben */
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      min-height: 60px;
+      padding: 0.5rem var(--section-px);
+      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+      background: var(--c-accent);
+      /* Textfarbe pro Kunde pruefen, bei hellem Akzent var(--c-text). */
+      color: var(--c-white);
+      text-decoration: none;
+      box-shadow: var(--shadow-md);
+    }
+    .pw-telefonleiste:active { background: var(--c-accent-hover); }
+
+    .pw-telefonleiste__nummer {
+      font-family: var(--font-display);
+      font-weight: var(--fw-display-strong, 700);
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    :global(.js) .pw-telefonleiste {
+      transform: translateY(115%);
+      opacity: 0;
+      transition: transform 280ms var(--ease-out), opacity 200ms var(--ease-out);
+    }
+    :global(.js) .pw-telefonleiste.ist-da { transform: none; opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .pw-telefonleiste { transition: none; }
+  }
+</style>
+
+<style is:global>
+  @media (max-width: 899px) {
+    body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+    html { scroll-padding-bottom: 76px; }
+  }
+</style>
+
+<script>
+  // Beobachtet den Anruf-Knopf im Hero (data-anruf-primaer). Solange er im
+  // Bild ist, bleibt der Balken weg. Ohne solchen Knopf (Impressum ...) steht
+  // er sofort da.
+  const leiste = document.querySelector<HTMLElement>('.pw-telefonleiste');
+  const knopf = document.querySelector<HTMLElement>('[data-anruf-primaer]');
+
+  if (leiste) {
+    if (!knopf || !('IntersectionObserver' in window)) {
+      leiste.classList.add('ist-da');
+    } else {
+      const beobachter = new IntersectionObserver(
+        ([eintrag]) => leiste.classList.toggle('ist-da', !eintrag.isIntersecting),
+        { threshold: 0 },
+      );
+      beobachter.observe(knopf);
+    }
+  }
+</script>

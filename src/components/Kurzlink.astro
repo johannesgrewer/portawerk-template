@@ -1,0 +1,44 @@
+---
+/**
+ * Kurzlink.astro — gezaehlter Kurzlink (Vorlage HGS, 08.10.2026).
+ *
+ * Gedruckte QR-Codes (Bewertungspaket) zeigen auf kurze Pfade der eigenen
+ * Domain (/bewerten, /stoerung) statt aufs Ziel. Zwei Gruende: Das Ziel kann
+ * sich aendern, ohne Karten neu zu drucken, und Pirsch zaehlt, wie oft ein
+ * Code gescannt wird. Gezaehlt wird im Worker, wenn diese Seite ausgeliefert
+ * wird, deshalb leitet sie sofort weiter. Eine _redirects-Regel wuerde nicht
+ * gezaehlt. Nicht indexiert, nicht in der Sitemap (astro.config.mjs).
+ *
+ * Angelegt werden die Seiten aus site.kurzlinks (src/pages/[kurzlink].astro).
+ */
+import { site } from '../config/site';
+
+interface Props {
+  /** Ziel, absolut oder ab der Wurzel */
+  ziel: string;
+  /** Linktext, falls JavaScript fehlt */
+  titel: string;
+}
+
+const { ziel, titel } = Astro.props;
+---
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="refresh" content={`0;url=${ziel}`} />
+    <title>{titel} · {site.nameKurz ?? site.name}</title>
+    <script is:inline define:vars={{ ziel }}>window.location.replace(ziel);</script>
+    <style>
+      body { margin: 0; background: #fff; }
+      p { font-family: system-ui, sans-serif; text-align: center; margin-top: 40vh; }
+      a { color: #1c1917; }
+    </style>
+  </head>
+  <body>
+    {/* Nur ohne JavaScript sichtbar. */}
+    <noscript><p><a href={ziel}>{titel}</a></p></noscript>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+---
+/**
+ * Fragen.astro — haeufige Fragen, ohne JavaScript aufklappbar (Vorlage HGS).
+ *
+ * <details>/<summary>: kein Skript, kein Zustand, der Antworttext steht im
+ * Markup und wird gelesen, auch wenn er zugeklappt ist. Das gemeinsame
+ * name-Attribut haelt immer nur eine Frage offen, ohne Skript. Alte Browser
+ * lassen dann einfach mehrere offen.
+ *
+ * KEIN FAQPage-SCHEMA. Das Ergebnis gibt es seit 07.05.2026 nicht mehr
+ * (references/portawerk-google-regelwerk). Die Fragen bleiben sichtbar.
+ *
+ * Die erste Frage steht standardmaessig offen: Antworten sollen nicht nur
+ * zugeklappt auf der Seite stehen (Regelwerk), und man sieht sofort, dass
+ * sich die Zeilen oeffnen lassen.
+ *
+ * Inhalt: keine Preise, keine Fristen in Stunden, keine Zusagen, die der
+ * Betrieb nicht halten kann. Optik ueber Tokens und class von aussen.
+ */
+interface Frage {
+  frage: string;
+  antwort: string;
+}
+
+interface Props {
+  fragen: Frage[];
+  id?: string;
+  titel?: string;
+  /** Erste Frage geoeffnet */
+  ersteOffen?: boolean;
+  class?: string;
+}
+
+const { fragen, id = 'fragen', titel = 'Häufige Fragen', ersteOffen = true, class: klasse } = Astro.props;
+const gruppe = `fragen-${id}`;
+---
+<section id={id} class:list={['section', 'pw-fragen', klasse]}>
+  <div class="container container-narrow">
+    <h2>{titel}</h2>
+    <div class="pw-fragen__liste">
+      {fragen.map(({ frage, antwort }, i) => (
+        <details class="pw-fragen__eintrag" name={gruppe} open={ersteOffen && i === 0}>
+          <summary class="pw-fragen__frage">
+            <span>{frage}</span>
+            <span class="pw-fragen__zeichen" aria-hidden="true"></span>
+          </summary>
+          <div class="pw-fragen__antwort"><p>{antwort}</p></div>
+        </details>
+      ))}
+    </div>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .pw-fragen__liste { margin-top: var(--space-lg); border-top: 1px solid var(--c-border); }
+  .pw-fragen__eintrag { border-bottom: 1px solid var(--c-border); }
+
+  .pw-fragen__frage {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    /* 48 px Mindesthoehe, damit die Zeile auf dem Handy gut zu treffen ist. */
+    min-height: 48px;
+    padding-block: var(--space-md);
+    font-family: var(--font-display);
+    font-weight: var(--fw-display, 600);
+    font-size: var(--fs-h4);
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+    cursor: pointer;
+    list-style: none;
+  }
+  .pw-fragen__frage::-webkit-details-marker { display: none; }
+  .pw-fragen__frage:hover { color: var(--c-primary); }
+
+  /* Plus und Minus aus zwei Strichen, kein Icon noetig. */
+  .pw-fragen__zeichen { position: relative; flex: none; width: 1rem; height: 1rem; }
+  .pw-fragen__zeichen::before,
+  .pw-fragen__zeichen::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 2px;
+    margin-top: -1px;
+    background: currentColor;
+    transition: transform var(--duration-fast) var(--ease-smooth);
+  }
+  .pw-fragen__zeichen::after { transform: rotate(90deg); }
+  .pw-fragen__eintrag[open] .pw-fragen__zeichen::after { transform: rotate(0deg); }
+
+  .pw-fragen__antwort p {
+    max-width: 62ch;
+    margin: 0 0 var(--space-lg);
+    color: var(--c-text-muted);
+    line-height: var(--lh-relaxed);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pw-fragen__zeichen::before,
+    .pw-fragen__zeichen::after { transition: none; }
+  }
+</style>
