@@ -12,9 +12,18 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "[projekt-slug]-preview",
   "compatibility_date": "2026-07-27",
+
+  // Eigener Einstieg: liefert dist/ aus, setzt Sicherheits-Header und zaehlt
+  // Seitenaufrufe serverseitig (@portawerk/messung). Siehe worker/index.ts.
+  "main": "./worker/index.ts",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    // Seiten laufen zuerst durch den Worker (Zaehlung, Header), die
+    // Dateiordner aus dist/ nicht. Ordner je Projekt aus dist/ ablesen.
+    // Fuer sie gilt public/_headers.
+    "run_worker_first": ["/*", "!/_astro/*", "!/fonts/*", "!/images/*"]
   },
   "routes": [
     { "pattern": "[projekt].portawerk.de", "custom_domain": true }
@@ -29,22 +38,14 @@
   // Origin in connect-src und form-action. Genau das wurde frueher regelmaessig
   // vergessen, und dann scheitert der Formularversand still.
   //
-  // Dafuer ergaenzen:
-  //   "main": "./worker/index.ts",
-  //   "assets": { ..., "binding": "ASSETS", "run_worker_first": ["/api/*"] }
-  //
-  // Und im Worker:
-  //   export default class extends WorkerEntrypoint {
-  //     async fetch(request) {
-  //       const url = new URL(request.url);
-  //       if (url.pathname === '/api/kontakt') return handleKontakt(request, this.env);
-  //       return this.env.ASSETS.fetch(request);
-  //     }
-  //   }
+  // Dafuer in worker/index.ts /api/kontakt vor der Asset-Auslieferung
+  // beantworten (@portawerk/forms), Vorbild HGS Becker. run_worker_first
+  // deckt /api/* mit "/*" bereits ab.
   //
   // Achtung: Header aus public/_headers gelten NICHT fuer Antworten, die der
   // Worker selbst erzeugt. Security-Header dort im Code setzen.
   //
-  // Brevo-Secrets nie in diese Datei, sondern:
+  // Secrets nie in diese Datei, sondern:
   //   printf '%s' "$KEY" | npx wrangler secret put BREVO_API_KEY
+  //   printf '%s' "$KEY" | npx wrangler secret put PIRSCH_ZUGANG   (erst beim Livegang)
 }

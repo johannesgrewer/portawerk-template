@@ -29,8 +29,8 @@ Vor jedem Deploy durchgehen. **Rot** = Blocker (muss), **Gelb** = sollte, **Weis
 
 - [ ] `CookieConsent` nur falls wirklich einwilligungspflichtige Dienste dazukommen
 - [ ] Social-Links im Footer (`showSocials`)
-- [ ] Zusaetzliche SEO-Landingpage (eigenes Zusatzprodukt, `portawerk-seo`)
+- [ ] Zusaetzliche SEO-Landingpage (eigenes Zusatzprodukt, Anti-Doorway-Regeln in `references/portawerk-google-regelwerk` Abschnitt 1)
 
 ---
 
-> Diese Ampel wird von `portawerk-check` (Qualitaet) und `portawerk-security` (Go/No-Go) als Referenz genutzt.
+> Diese Ampel ist eine Kurzliste fuer den Bau. Die eigentliche Pruefung vor und nach dem Livegang macht `/portawerk-abnahme` (ersetzt seit 18.10.2026 `portawerk-check` und `portawerk-security`).

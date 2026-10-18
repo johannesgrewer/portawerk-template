@@ -1,5 +1,7 @@
-# Cloudflare Pages — Security Headers + CSP
-# Gilt fuer alle Pfade. Pro Projekt anpassen: siehe TODOs in der CSP.
+# Security Headers + CSP fuer die DATEIEN, die am Worker vorbeigehen
+# (/_astro, /fonts, /images, siehe run_worker_first in wrangler.jsonc).
+# Seiten laufen durch den Worker und bekommen ihre Header aus
+# src/config/sicherheit.ts. Beide Stellen gleich halten.
 
 /*
   X-Content-Type-Options: nosniff
@@ -7,7 +9,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://api.pirsch.io https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://api.pirsch.io https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
 # ── Pro Projekt ergaenzen ──────────────────────────────────────────────
 # 1) Kontaktformular: laeuft ab sofort als /api/kontakt IM SELBEN Worker.

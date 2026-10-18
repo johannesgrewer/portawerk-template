@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
+    "@portawerk/messung": "^0.2.0",
     "astro": "^7.3.1"
   },
   "devDependencies": {
