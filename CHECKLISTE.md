@@ -8,7 +8,7 @@ Vor jedem Deploy durchgehen. **Rot** = Blocker (muss), **Gelb** = sollte, **Weis
 - [ ] `config/tokens.css` Farben + Fonts pro Kunde gesetzt (kein Default-Theme mehr)
 - [ ] Impressum + Datenschutz befuellt, auf **jeder** Seite im Footer verlinkt
 - [ ] Genau **eine** `<h1>` pro Seite
-- [ ] Kontaktformular: Honeypot, Zeitstempel, Datenschutz-Haken vorhanden; Worker-Endpoint gesetzt
+- [ ] Kontaktformular: Honeypot `pw_kontrolle`, Zeitfeld `_t`, Datenschutz-Haken vorhanden; `/api/kontakt` im selben Worker
 - [ ] Keine Secrets im Frontend/Repo (`BREVO_API_KEY` nur als Worker-Secret)
 - [ ] Keine externen Dienste ohne Einwilligung (Fonts self-hosted, Maps/YouTube nur `TwoClickEmbed`)
 - [ ] Skip-Link zeigt auf existierendes `#main-content`
@@ -20,14 +20,14 @@ Vor jedem Deploy durchgehen. **Rot** = Blocker (muss), **Gelb** = sollte, **Weis
 - [ ] Touch-Targets ≥ 24px, Buttons min-height 48px
 - [ ] `LocalBusiness`-Schema mit echten Adressdaten
 - [ ] Meta-Description je Seite individuell, ≤ 155 Zeichen
-- [ ] OG-Bild (`/og-image.jpg`, 1200×630) vorhanden
+- [ ] OG-Bild (`/og-image.jpg`, 1200×630), Favicon und Icons ersetzt (`npm run rauchtest` meldet keinen Starter-Platzhalter mehr)
 - [ ] Bilder optimiert (WebP, skaliert) — keine Roh-PNG > 500 KB
 - [ ] `prefers-reduced-motion` respektiert
 - [ ] Responsive geprueft (375 / 768 / 1440)
 
 ## ⚪ Weiss — optional
 
-- [ ] `CookieConsent` nur falls wirklich einwilligungspflichtige Dienste dazukommen
+- [ ] Cookie-Hinweis nur, falls wirklich einwilligungspflichtige Dienste dazukommen (Baustein: `00_Toolkit/blocks/cookie-consent/`)
 - [ ] Social-Links im Footer (`showSocials`)
 - [ ] Zusaetzliche SEO-Landingpage (eigenes Zusatzprodukt, Anti-Doorway-Regeln in `references/portawerk-google-regelwerk` Abschnitt 1)
 

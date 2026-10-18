@@ -1,0 +1,48 @@
+# VORLAGE. Erst beim Livegang aktiv: nach .github/workflows/wartung.yml
+# kopieren (/portawerk-deliver, Anschluss an die Wartung). Liegt bewusst nicht
+# unter .github/, sonst liefe die Wartung woechentlich im Template-Repo und in
+# jedem Pitch.
+#
+# Woechentliche Wartung fuer [projekt].
+#
+# Der Ablauf selbst liegt zentral in Portawerk/wartung. Hier stehen nur die
+# Eigenheiten dieses Projekts. Die Version ist bewusst festgenagelt (@v2).
+# Er braucht scripts/rauchtest.mjs, kernpakete.mjs und luecken.mjs im Projekt.
+#
+# Kein Auto-Merge: Die Seite geht per `wrangler deploy` aus dem lokalen Stand
+# in das Cloudflare-Konto des Kunden, nicht ueber eine Git-Anbindung. Ein
+# gemergter Pull Request aendert an der Live-Seite nichts. Der Lauf deployt
+# selbst nie und braucht deshalb keinen Cloudflare-Token.
+# @portawerk/forms, /messung und /rechtstexte kommen aus der Registry der
+# Organisation, deshalb privates_register und packages: read. Dem Repo dafuer
+# Lesezugriff auf die drei Pakete geben ("Manage Actions access").
+
+name: Wartung
+
+on:
+  schedule:
+    # TODO: freien Slot waehlen (Liste der belegten Slots in Portawerk/wartung).
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  packages: read
+
+jobs:
+  wartung:
+    uses: Portawerk/wartung/.github/workflows/wartung-kern.yml@v2
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      packages: read
+    with:
+      kern_pakete: 'astro|@astrojs|@portawerk'
+      kern_bezeichnung: 'Astro, @astrojs, @portawerk'
+      auto_merge: false
+      privates_register: true
+      hand_deploy_hinweis: 'Dieses Projekt geht per wrangler deploy ins Cloudflare-Konto des Kunden live (Token aus ~/.claude/secrets/): Mergen allein ändert an der Live-Seite nichts, es braucht danach einen Deploy von Hand.'
+    secrets: inherit

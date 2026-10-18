@@ -1,0 +1,66 @@
+---
+/**
+ * TurnstileNachladen.astro — laedt das Turnstile-Skript erst nach dem
+ * Seitenaufbau im Leerlauf, oder sobald jemand ins Formular tippt, je
+ * nachdem, was zuerst kommt. Wird von ContactForm eingebunden, sobald
+ * site.turnstileSiteKey gesetzt ist.
+ *
+ * Warum: Das Skript zieht 650 bis 850 KB. Mit <script async defer> lud es
+ * sofort und nahm dem Hero die Bandbreite (Ordnung Trier, mobil Lighthouse
+ * 65, 07.10.2026; Heck vorher 89 bis 96, danach 97 bis 99).
+ *
+ * Bewusst NICHT an den Abstand des Formulars zum Bildschirm gebunden: Der
+ * haengt an Breite, Schriftgroesse und Seite, bei Heck hat das Widget so
+ * einmal nie geladen. Implizites Rendern findet .cf-turnstile von selbst,
+ * sobald das Skript da ist.
+ *
+ * Groesse: "normal" ist 300 px fest. Wo weniger Platz ist, "compact", sonst
+ * ragt das Widget auf 320er und 360er Handys ueber den Rand (HGS-Befund).
+ * Gesetzt, bevor das Skript rendert.
+ *
+ * Mehrere Formulare auf einer Seite: Die globale Marke sorgt dafuer, dass das
+ * Skript nur einmal angefordert wird.
+ */
+---
+
+<script is:inline>
+  (() => {
+    const widgets = document.querySelectorAll('.cf-turnstile');
+    if (!widgets.length) return;
+
+    widgets.forEach((widget) => {
+      widget.dataset.size = widget.clientWidth >= 300 ? 'normal' : 'compact';
+    });
+
+    const laden = () => {
+      if (window.__turnstileAngefordert) return;
+      window.__turnstileAngefordert = true;
+      const skript = document.createElement('script');
+      skript.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      skript.async = true;
+      skript.defer = true;
+      // Netzfehler: beim naechsten Anlass (Fokus im Formular) neu versuchen.
+      skript.onerror = () => { window.__turnstileAngefordert = false; skript.remove(); };
+      document.head.appendChild(skript);
+    };
+
+    /* Sobald die Seite steht und der Browser Luft hat. Die 2 s Obergrenze
+       greift, wenn der Browser nie zur Ruhe kommt. */
+    const nachLeerlauf = () => {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(laden, { timeout: 2000 });
+      } else {
+        setTimeout(laden, 1200);
+      }
+    };
+
+    if (document.readyState === 'complete') nachLeerlauf();
+    else window.addEventListener('load', nachLeerlauf, { once: true });
+
+    /* Wer schneller im Formular ist als der Leerlauf, loest es selbst aus. */
+    widgets.forEach((widget) => {
+      const formular = widget.closest('form');
+      if (formular) formular.addEventListener('focusin', laden);
+    });
+  })();
+</script>

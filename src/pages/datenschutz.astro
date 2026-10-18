@@ -1,12 +1,24 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-import { site } from "../config/site";
+/**
+ * datenschutz.astro — Datenschutzerklaerung von easyRechtssicher, siehe
+ * Rechtstext.astro. Ohne Notfall-Fassung steht nur der Verantwortliche da und
+ * ein Hinweis, dass die Erklaerung aktualisiert wird. Bewusst kein selbst
+ * geschriebener Entwurf: Rechtstexte sagen wir inhaltlich nie zu.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Rechtstext from '../components/Rechtstext.astro';
+import { site } from '../config/site';
 
-const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+// Nur Werte aus site.ts, keine Eingaben von aussen.
+const platzhalter = [
+  '<h2>Verantwortlicher</h2>',
+  `<p>${site.legal.inhaber}<br>${site.name.replace(/&/g, '&amp;')}<br>${site.address.strasse}, ${site.address.plz} ${site.address.ort}<br>`,
+  `E-Mail: <a href="mailto:${site.email}">${site.email}</a><br>Telefon: <a href="tel:+${site.telefonRaw}">${site.telefon}</a></p>`,
+  '<p>Die Datenschutzerkl&auml;rung wird gerade aktualisiert. Fragen zum Datenschutz beantworten wir Ihnen gern unter den oben genannten Kontaktdaten.</p>',
+].join('');
 ---
-
 <BaseLayout
   title={`Datenschutz | ${site.name}`}
   description={`Datenschutzerklärung von ${site.name}.`}
@@ -14,144 +26,9 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
 >
   <Header />
   <main id="main-content" class="legal-page">
-    <div class="container container-narrow legal-content">
+    <div class="container container-narrow">
       <h1>Datenschutzerkl&auml;rung</h1>
-
-      <p class="entwurf">
-        Entwurfsstand für die Vorschau. Die verbindlichen Texte werden vor dem
-        Livegang aus dem Generator von easyRechtssicher eingebunden.
-      </p>
-
-      <h2>1. Verantwortlicher</h2>
-      <p>
-        {site.legal.inhaber}<br/>
-        {site.name}<br/>
-        {site.address.strasse}, {site.address.plz} {site.address.ort}<br/>
-        E-Mail: <a href={`mailto:${site.email}`}>{site.email}</a><br/>
-        Telefon: <a href={`tel:+${site.telefonRaw}`}>{site.telefon}</a>
-      </p>
-
-      <h2>2. Allgemeines zur Datenverarbeitung</h2>
-      <p>
-        Wir nehmen den Schutz Ihrer pers&ouml;nlichen Daten ernst. Diese Datenschutzerkl&auml;rung
-        informiert Sie &uuml;ber Art, Umfang und Zweck der Verarbeitung personenbezogener Daten auf
-        dieser Website.
-      </p>
-
-      <h2>3. Hosting</h2>
-      <p>
-        Diese Website wird bei <strong>Cloudflare, Inc.</strong> gehostet. Beim Aufruf werden automatisch
-        Informationen in Server-Log-Files erfasst (IP-Adresse, Browsertyp, Betriebssystem, Referrer-URL,
-        Uhrzeit). Cloudflare betreibt ein globales Netzwerk; Anfragen aus der EU werden bevorzugt &uuml;ber
-        europ&auml;ische Standorte verarbeitet.
-      </p>
-      <p>
-        Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an zuverl&auml;ssiger
-        Darstellung der Website). Ein Auftragsverarbeitungsvertrag mit Cloudflare liegt vor.<br/>
-        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
-          Datenschutzerkl&auml;rung Cloudflare
-        </a>
-      </p>
-
-      <h2>4. SSL-/TLS-Verschl&uuml;sselung</h2>
-      <p>
-        Diese Website nutzt aus Sicherheitsgr&uuml;nden SSL- bzw. TLS-Verschl&uuml;sselung.
-        Eine verschl&uuml;sselte Verbindung erkennen Sie am Schloss-Symbol in der Adresszeile.
-      </p>
-
-      <h2>5. Kontaktformular</h2>
-      <p>
-        Wenn Sie uns &uuml;ber das Kontaktformular kontaktieren, werden Ihre Angaben (Name, E-Mail-Adresse,
-        Nachricht) zur Bearbeitung Ihrer Anfrage gespeichert und nicht ohne Ihre Einwilligung weitergegeben.
-      </p>
-      <p>
-        Formularverarbeitung: <strong>Cloudflare Workers</strong> (Cloudflare, Inc.). Ihre Angaben werden
-        dort ausschlie&szlig;lich zur Weiterleitung verarbeitet und nicht dauerhaft gespeichert.<br/>
-        E-Mail-Zustellung: <strong>Brevo</strong> (brevo.com, Sendinblue GmbH).
-        Auftragsverarbeitungsvertr&auml;ge liegen vor.<br/>
-        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
-      </p>
-
-      <h2>6. Webanalyse mit Pirsch</h2>
-      <p>
-        Diese Website nutzt <strong>Pirsch Analytics</strong>, ein datenschutzfreundliches
-        Webanalyse-Tool aus Deutschland. Die Messung l&auml;uft serverseitig: Unser Server meldet
-        den Seitenaufruf an Pirsch, in Ihrem Browser wird kein Skript geladen. Erfasst werden
-        anonymisierte Nutzungsstatistiken: aufgerufene Seiten, Verweisquelle, ungef&auml;hre Herkunft
-        nach Land, Ger&auml;tetyp sowie das erfolgreiche Absenden unseres Kontaktformulars. Diese
-        Ereignisse werden nur als Anzahl gez&auml;hlt, nicht einzelnen Personen zugeordnet.
-      </p>
-      <p>
-        Es werden <strong>keine Cookies gesetzt</strong>, und es wird weder auf den Browser-Cache
-        noch auf den lokalen Speicher Ihres Endger&auml;ts zugegriffen. Pers&ouml;nliche Profile
-        entstehen nicht. Zur Unterscheidung von Besuchen berechnet Pirsch einen Pr&uuml;fwert aus
-        Ihrer IP-Adresse, der Browserkennung, dem Datum und einem je Website eigenen, t&auml;glich
-        wechselnden Zufallswert. Ein Wiedererkennen ist dadurch h&ouml;chstens f&uuml;r 24 Stunden und
-        nicht &uuml;ber mehrere Websites hinweg m&ouml;glich. Die IP-Adresse und die Browserkennung
-        selbst werden nicht gespeichert.
-      </p>
-      <p>
-        Anbieter: <strong>Emvi Software GmbH</strong>, Nickelstra&szlig;e 1b, 33378 Rheda-Wiedenbr&uuml;ck.
-        Die Verarbeitung findet ausschlie&szlig;lich auf Servern in Deutschland statt. Ein Vertrag zur
-        Auftragsverarbeitung gem&auml;&szlig; Art. 28 DSGVO liegt vor. Weitere Informationen:
-        <a href="https://pirsch.io/privacy" target="_blank" rel="noopener noreferrer">pirsch.io/privacy</a><br/>
-        Da keine Informationen auf Ihrem Endger&auml;t gespeichert oder ausgelesen werden, greift die
-        Einwilligungspflicht nach &sect; 25 TDDDG nicht. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO
-        (berechtigtes Interesse an einer datensparsamen Analyse und Verbesserung unseres Webangebots).
-      </p>
-
-      <!-- Nur bei 2-Klick Google Maps: -->
-      <!--
-      <h2>6. Google Maps</h2>
-      <p>
-        Auf dieser Website wird Google Maps eingebunden. Die Karte wird erst nach Ihrer aktiven
-        Einwilligung geladen (2-Klick-Lösung). Erst wenn Sie auf "Karte laden" klicken, werden
-        Daten an Google übertragen.
-      </p>
-      <p>
-        Anbieter: Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland.<br/>
-        Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).
-      </p>
-      -->
-
-      <h2>6. Schriftarten</h2>
-      <p>
-        Alle Schriftarten werden selbst gehostet und nicht von externen Servern (wie Google Fonts)
-        geladen. Es erfolgt keine Daten&uuml;bermittlung an Dritte durch das Laden von Schriftarten.
-      </p>
-
-      <h2>7. Cookies &amp; Tracking</h2>
-      <p>
-        <strong>Diese Website setzt keine Cookies.</strong> Es kommen keine Tracking-Dienste wie
-        Google Analytics zum Einsatz, und es findet keine geräteübergreifende Wiedererkennung statt.
-        Die unter Punkt 6 beschriebene Reichweitenmessung arbeitet cookielos, deshalb ist auch
-        kein Cookie-Banner erforderlich.
-      </p>
-
-      <h2>8. Ihre Rechte</h2>
-      <p>Sie haben das Recht auf:</p>
-      <p>
-        Auskunft (Art. 15 DSGVO) &middot; Berichtigung (Art. 16) &middot; L&ouml;schung (Art. 17) &middot;
-        Einschr&auml;nkung (Art. 18) &middot; Daten&uuml;bertragbarkeit (Art. 20) &middot;
-        Widerspruch (Art. 21 DSGVO)
-      </p>
-      <p>
-        Zur Aus&uuml;bung Ihrer Rechte wenden Sie sich an:
-        <a href={`mailto:${site.email}`}>{site.email}</a>
-      </p>
-
-      <h2>9. Beschwerderecht</h2>
-      <p>
-        Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbeh&ouml;rde zu beschweren.<br/>
-        Zust&auml;ndige Beh&ouml;rde (Rheinland-Pfalz):<br/>
-        Der Landesbeauftragte f&uuml;r den Datenschutz und die Informationsfreiheit Rheinland-Pfalz<br/>
-        Hintere Bleiche 34, 55116 Mainz &middot;
-        <a href="https://www.datenschutz.rlp.de" target="_blank" rel="noopener noreferrer">
-          www.datenschutz.rlp.de
-        </a>
-      </p>
-
-      <p class="legal-updated">Stand: {stand}</p>
+      <Rechtstext art="datenschutz" ersatz={platzhalter} />
     </div>
   </main>
   <Footer />
@@ -159,52 +36,9 @@ const stand = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'num
 
 <style>
   .legal-page {
-    padding-top: calc(64px + var(--space-2xl));
+    padding-top: var(--space-2xl);
     padding-bottom: var(--space-2xl);
     background: var(--c-bg);
   }
-
-  .legal-content h1 { margin-bottom: var(--space-lg); }
-
-  .entwurf {
-    padding: var(--space-md);
-    background: var(--c-surface);
-    border-left: 3px solid var(--c-accent);
-    border-radius: var(--radius-sm);
-    font-size: var(--fs-small);
-    margin-bottom: var(--space-xl);
-  }
-
-  .legal-content h2 {
-    font-size: var(--fs-h3);
-    margin-top: var(--space-xl);
-    margin-bottom: var(--space-sm);
-  }
-
-  .legal-content h3 {
-    font-size: var(--fs-h4);
-    margin-top: var(--space-lg);
-    margin-bottom: var(--space-xs);
-  }
-
-  .legal-content p {
-    color: var(--c-text-muted);
-    line-height: var(--lh-relaxed);
-    margin-bottom: var(--space-md);
-  }
-
-  .legal-content a {
-    color: var(--c-primary);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  .legal-content a:hover { color: var(--c-primary-light); }
-
-  .legal-updated {
-    margin-top: var(--space-2xl);
-    font-size: var(--fs-xs);
-    color: var(--c-text-muted);
-    font-style: italic;
-  }
+  h1 { margin-bottom: var(--space-lg); }
 </style>

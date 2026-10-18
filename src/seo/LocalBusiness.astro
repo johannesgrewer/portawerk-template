@@ -1,23 +1,62 @@
 ---
 /**
- * LocalBusiness.astro — Schema.org strukturierte Daten aus site.ts.
- * Damit Google den Betrieb als lokales Business erkennt.
- * type ueberschreibbar fuer praezisere Branchen (z.B. "Plumber").
+ * LocalBusiness.astro — Schema.org strukturierte Daten aus site.ts, als
+ * @graph mit festen Kennungen (Vorlage HGS Becker, 17.10.2026):
+ *
+ *   #business     der Betrieb: Anschrift, Telefon international, Logo,
+ *                 Oeffnungszeiten, Einsatzgebiet, sameAs (Profile, die
+ *                 denselben Betrieb meinen; Grundlage dafuer, dass ChatGPT
+ *                 und Perplexity ihn als einen erkennen)
+ *   #website      NUR AUF DER STARTSEITE (Google-Regelwerk), Herausgeber
+ *                 ist #business
+ *   #webpage      je Seite, handelt von #business
+ *   #breadcrumb   nur auf Unterseiten
+ *
+ * BEWUSST NICHT DRIN:
+ *   - aggregateRating mit Google-Sternen. Google untersagt, Bewertungen einer
+ *     fremden Plattform als eigene auszuzeichnen.
+ *   - FAQPage. Das Ergebnis gibt es seit 07.05.2026 nicht mehr
+ *     (references/portawerk-google-regelwerk). Fragen sichtbar lassen,
+ *     Auszeichnung weglassen.
  */
 import { site } from '../config/site';
 
 interface Props {
   type?: string;
+  /** Titel der Seite, wie im <title> */
+  titel: string;
+  /** Meta-Description der Seite */
+  beschreibung: string;
+  /** Kanonische Adresse der Seite */
+  url: string;
+  /** Name der Seite in der Brotkrumenleiste. Ohne Angabe keine BreadcrumbList */
+  brotkrumen?: string;
 }
 
-const { type = site.businessType } = Astro.props;
+const { type = site.businessType, titel, beschreibung, url, brotkrumen } = Astro.props;
 
-const schema: Record<string, unknown> = {
-  '@context': 'https://schema.org',
+/* Feste Kennungen, damit sich die Knoten gegenseitig finden. */
+const startseite = new URL('/', site.domain).href;
+const istStartseite = new URL(url).pathname === '/';
+const ID_BUSINESS = `${startseite}#business`;
+const ID_WEBSITE = `${startseite}#website`;
+const idSeite = `${url}#webpage`;
+const idBrotkrumen = `${url}#breadcrumb`;
+
+/** Alle Adressen, unter denen derselbe Betrieb sonst noch steht. */
+const profile = [
+  ...(site.socials?.map((s) => s.href) ?? []),
+  ...(site.googleProfil ? [site.googleProfil] : []),
+];
+
+const business: Record<string, unknown> = {
   '@type': type,
+  '@id': ID_BUSINESS,
   name: site.name,
-  url: site.domain,
-  telephone: site.telefon,
+  url: startseite,
+  // Internationale Schreibweise, wie Googles Local-Business-Regeln sie
+  // verlangen. telefonRaw traegt die Laendervorwahl schon.
+  telephone: `+${site.telefonRaw}`,
   email: site.email,
   address: {
     '@type': 'PostalAddress',
@@ -28,9 +67,76 @@ const schema: Record<string, unknown> = {
     addressCountry: 'DE',
   },
   image: new URL('/og-image.jpg', site.domain).href,
+  // Quadratisches Signet, dasselbe wie das Favicon.
+  logo: new URL('/icon-512.png', site.domain).href,
   ...(site.geo
     ? { geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng } }
     : {}),
+  ...(site.googleProfil ? { hasMap: site.googleProfil } : {}),
+  ...(site.einsatzgebiet?.length
+    ? {
+        // Nur der Firmensitz ist sicher eine City, Landkreise und Regionen
+        // sind ein Place.
+        areaServed: site.einsatzgebiet.map((ort) => ({
+          '@type': ort === site.address.ort ? 'City' : 'Place',
+          name: ort,
+        })),
+      }
+    : {}),
+  ...(site.oeffnungszeitenSchema?.length
+    ? {
+        openingHoursSpecification: site.oeffnungszeitenSchema.map((block) => ({
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: block.tage,
+          opens: block.von,
+          closes: block.bis,
+        })),
+      }
+    : {}),
+  ...(profile.length ? { sameAs: profile } : {}),
+};
+
+const website = {
+  '@type': 'WebSite',
+  '@id': ID_WEBSITE,
+  url: startseite,
+  name: site.name,
+  ...(site.nameKurz ? { alternateName: site.nameKurz } : {}),
+  inLanguage: 'de-DE',
+  publisher: { '@id': ID_BUSINESS },
+};
+
+const webseite: Record<string, unknown> = {
+  '@type': 'WebPage',
+  '@id': idSeite,
+  url,
+  name: titel,
+  description: beschreibung,
+  inLanguage: 'de-DE',
+  ...(istStartseite ? { isPartOf: { '@id': ID_WEBSITE } } : {}),
+  about: { '@id': ID_BUSINESS },
+  ...(brotkrumen ? { breadcrumb: { '@id': idBrotkrumen } } : {}),
+};
+
+const brotkrumenListe = brotkrumen
+  ? {
+      '@type': 'BreadcrumbList',
+      '@id': idBrotkrumen,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Startseite', item: startseite },
+        { '@type': 'ListItem', position: 2, name: brotkrumen, item: url },
+      ],
+    }
+  : null;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    business,
+    ...(istStartseite ? [website] : []),
+    webseite,
+    ...(brotkrumenListe ? [brotkrumenListe] : []),
+  ],
 };
 ---
 <script type="application/ld+json" set:html={JSON.stringify(schema)} />

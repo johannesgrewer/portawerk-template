@@ -3,13 +3,28 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 // Statisches Astro, deployt als Cloudflare Worker mit Static Assets (siehe
-// wrangler.jsonc). Kein Adapter noetig, solange die Seite rein statisch ist.
-// Das Kontaktformular kommt spaeter als /api/kontakt in DENSELBEN Worker,
-// nicht in einen zweiten daneben.
+// wrangler.jsonc). KEIN Adapter: Formular, Rechtstexte und Messung laufen in
+// worker/index.ts, nicht als Astro-Routen. Den Adapter braucht es erst, wenn
+// Astro selbst Seiten zur Laufzeit rendern muss (Erweiterung nach HGS-Muster,
+// siehe CLAUDE.md).
 export default defineConfig({
   site: 'https://example.com', // TODO: Kundendomain eintragen (muss mit config/site.ts site.domain uebereinstimmen)
   output: 'static',
-  integrations: [sitemap()],
+
+  integrations: [
+    sitemap({
+      // Datum des Baus, also des Deploys. Genauer geht es ohne CMS nicht.
+      lastmod: new Date(),
+      // Seiten mit noindex gehoeren nicht in die Sitemap, sonst meldet die
+      // Search Console einen Widerspruch. Jede neue noindex-Seite (/bewerten,
+      // /stoerung ...) hier ergaenzen.
+      filter: (seite) => !/\/(impressum|datenschutz|danke)\/$/.test(seite),
+    }),
+  ],
+
+  // CSS direkt ins HTML statt render-blockierender Dateien. Spart laut
+  // Lighthouse-Messung bei HGS Becker 150 bis 480 ms bis zum ersten Bild.
+  build: { inlineStylesheets: 'always' },
 
   // Astro 7 stellt compressHTML auf 'jsx' um. Dabei fallen Leerzeichen
   // zwischen Inline-Elementen weg, dann klebt Text am Link ("unter0651 ...").

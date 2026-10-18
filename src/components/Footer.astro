@@ -3,6 +3,8 @@
  * Footer.astro — Kontakt, Pflicht-Links, Attribution.
  * Zieht Kundendaten aus site.ts. Auf JEDER Seite eingebunden.
  * WCAG-sicher: heller Footer (surface-alt) + --c-text, theme-robust.
+ * Tippflaechen mindestens 44 px hoch (Launch-Check HGS, vorher 18 px).
+ * PortaWerk-Link mit nofollow (am 09.10.2026 entschieden).
  */
 import { site } from '../config/site';
 
@@ -14,8 +16,8 @@ interface Props {
 
 const {
   links = [
-    { label: 'Impressum', href: '/impressum' },
-    { label: 'Datenschutz', href: '/datenschutz' },
+    { label: 'Impressum', href: '/impressum/' },
+    { label: 'Datenschutz', href: '/datenschutz/' },
   ],
   showSocials = false,
 } = Astro.props;
@@ -55,7 +57,7 @@ const hasSocials = showSocials && site.socials && site.socials.length > 0;
   <div class="container pw-footer-bottom">
     <p>&copy; {year} {site.name}</p>
     <p class="pw-attribution">
-      Website by <a href="https://portawerk.de" target="_blank" rel="noopener">PortaWerk</a>
+      Website von <a href="https://portawerk.de/" target="_blank" rel="noopener nofollow" aria-label="Website von PortaWerk (öffnet in neuem Tab)">PortaWerk</a>
     </p>
   </div>
 </footer>
@@ -85,7 +87,7 @@ const hasSocials = showSocials && site.socials && site.socials.length > 0;
     font-size: var(--fs-small);
     max-width: 34ch;
   }
-  .pw-footer-col { display: flex; flex-direction: column; gap: 0.4rem; }
+  .pw-footer-col { display: flex; flex-direction: column; gap: 0; }
   .pw-footer-h {
     font-size: var(--fs-xs);
     font-weight: 600;
@@ -102,6 +104,13 @@ const hasSocials = showSocials && site.socials && site.socials.length > 0;
     line-height: var(--lh-snug);
     transition: color var(--duration-fast) var(--ease-smooth);
   }
+  .pw-footer-col a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    align-self: flex-start;
+  }
+  .pw-footer-col address { padding-block: 0.6rem; }
   .pw-footer-col a:hover { color: var(--c-primary); }
 
   .pw-footer-bottom {
@@ -115,6 +124,9 @@ const hasSocials = showSocials && site.socials && site.socials.length > 0;
     color: var(--c-text-muted);
   }
   .pw-attribution a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: var(--c-primary);
     font-weight: 600;
   }

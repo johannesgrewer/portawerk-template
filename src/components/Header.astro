@@ -2,14 +2,21 @@
 /**
  * Header.astro — sticky Kopf mit Nav, CTA und mobilem Burger-Menue.
  * Struktur fest, Optik ueber Tokens. Inhalt ueber Props.
- * a11y: <nav aria-label>, Burger als <button> mit aria-expanded/-controls,
- * CTA bleibt auf Mobile sichtbar (ausserhalb des Burger).
+ * a11y: <nav aria-label>, Burger als <button> mit aria-expanded/-controls.
+ *
+ * ANRUF AUF DEM HANDY: Unter 900 px steht ein Telefon-Knopf neben dem Burger,
+ * auf jeder Breite. Bis 18.10.2026 verschwand der CTA unter 400 px, also auf
+ * fast allen Handys, und mit ihm der kuerzeste Weg zum Betrieb. Unter 400 px
+ * tritt jetzt der Text-Knopf zurueck, der Anruf bleibt.
+ *
+ * Logo aus site.logo mit echten Massen (width/height), damit nichts springt.
  */
+import { Phone } from '@lucide/astro';
 import { site } from '../config/site';
 
 interface NavLink { label: string; href: string; }
 interface Props {
-  logo?: string;          // Bildpfad; ohne -> Firmenname als Text
+  logo?: { src: string; breite: number; hoehe: number }; // Default: site.logo; ohne -> Name als Text
   links?: NavLink[];      // Default: site.nav
   ctaLabel?: string;      // Default: site.cta.label
   ctaHref?: string;       // Default: site.cta.href
@@ -17,7 +24,7 @@ interface Props {
 }
 
 const {
-  logo,
+  logo = site.logo,
   links = site.nav,
   ctaLabel = site.cta?.label,
   ctaHref = site.cta?.href,
@@ -26,8 +33,8 @@ const {
 ---
 <header class:list={['pw-header', { 'is-sticky': sticky }]}>
   <div class="container pw-header-inner">
-    <a href="/" class="pw-logo" aria-label={`${site.name} — zur Startseite`}>
-      {logo ? <img src={logo} alt={site.name} height="40" width="auto" /> : <span>{site.nameKurz ?? site.name}</span>}
+    <a href="/" class="pw-logo" aria-label={`${site.name}, zur Startseite`}>
+      {logo ? <img src={logo.src} alt={site.name} width={logo.breite} height={logo.hoehe} /> : <span>{site.nameKurz ?? site.name}</span>}
     </a>
 
     <nav class="pw-nav" aria-label="Hauptnavigation" id="pw-nav">
@@ -40,7 +47,10 @@ const {
       {ctaLabel && ctaHref && (
         <a href={ctaHref} class="btn btn-primary pw-header-cta">{ctaLabel}</a>
       )}
-      <button class="pw-burger" aria-label="Menue oeffnen" aria-expanded="false" aria-controls="pw-nav">
+      <a href={`tel:+${site.telefonRaw}`} class="pw-header-anruf" aria-label={`Anrufen: ${site.telefon}`}>
+        <Phone size={22} stroke-width={2.2} aria-hidden="true" />
+      </a>
+      <button class="pw-burger" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="pw-nav">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -89,6 +99,20 @@ const {
 
   .pw-header-actions { display: flex; align-items: center; gap: var(--space-sm); }
 
+  /* Telefon-Knopf, nur unter 900 px sichtbar (siehe Kopf). 44 px Tippflaeche. */
+  .pw-header-anruf {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-full);
+    background: var(--c-surface);
+    color: var(--c-text);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+  }
+  .pw-header-anruf:hover { background: var(--c-surface-alt); }
+
   .pw-burger {
     display: none;
     flex-direction: column;
@@ -116,6 +140,7 @@ const {
   /* ── Mobile ── */
   @media (max-width: 899px) {
     .pw-burger { display: flex; }
+    .pw-header-anruf { display: inline-flex; }
     .pw-nav {
       position: absolute;
       top: var(--header-h);
@@ -137,7 +162,7 @@ const {
     .pw-nav li { border-bottom: 1px solid var(--c-border); }
     .pw-nav li:last-child { border-bottom: none; }
     .pw-nav a { display: block; padding: var(--space-md) 0; }
-    /* CTA bleibt sichtbar, nur auf sehr schmalen Screens ausblenden */
+    /* Unter 400 px tritt der Text-Knopf zurueck, der Telefon-Knopf bleibt. */
     @media (max-width: 400px) { .pw-header-cta { display: none; } }
   }
 </style>
@@ -149,7 +174,7 @@ const {
     const setOpen = (open: boolean) => {
       nav.classList.toggle('is-open', open);
       burger.setAttribute('aria-expanded', String(open));
-      burger.setAttribute('aria-label', open ? 'Menue schliessen' : 'Menue oeffnen');
+      burger.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
     };
     burger.addEventListener('click', () => setOpen(burger.getAttribute('aria-expanded') !== 'true'));
     nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));

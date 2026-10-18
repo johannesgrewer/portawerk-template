@@ -32,6 +32,28 @@ export const SICHERHEITS_HEADER: Record<string, string> = {
 };
 
 /**
+ * Header fuer Antworten, die der Worker selbst erzeugt (/api/kontakt).
+ * Reines JSON, braucht nichts nachzuladen, wird nie zwischengespeichert.
+ */
+export const API_HEADER: Record<string, string> = {
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Cache-Control': 'no-store',
+  'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+};
+
+/** Setzt API_HEADER auf eine Worker-Antwort (ueberschreibt, was dort steht). */
+export function mitApiHeadern(antwort: Response): Response {
+  const kopf = new Headers(antwort.headers);
+  for (const [name, wert] of Object.entries(API_HEADER)) kopf.set(name, wert);
+  return new Response(antwort.body, {
+    status: antwort.status,
+    statusText: antwort.statusText,
+    headers: kopf,
+  });
+}
+
+/**
  * Ergaenzt fehlende Sicherheits-Header. Was eine Antwort selbst setzt, bleibt.
  * Umpacken statt direkt schreiben: Antworten aus der Asset-Auslieferung tragen
  * festgeschriebene Kopfzeilen ("Can't modify immutable headers").

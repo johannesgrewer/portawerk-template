@@ -21,7 +21,15 @@ const {
   noindex = false,
 } = Astro.props;
 
-const ogUrl = new URL(ogImage, site.domain).href;
+/**
+ * Das Vorschaubild muss von der Adresse kommen, unter der die Seite gerade
+ * erreichbar ist. Solange das die Vorschau ist, zeigt domain auf eine Seite,
+ * die es noch nicht gibt. WhatsApp und Discord bekommen dort einen Fehler und
+ * lassen das Bild weg, und Pitch-Links gehen fast immer per WhatsApp raus.
+ * Sobald site.vorschau geloescht ist, greift wieder die Kundendomain.
+ */
+const basis = site.vorschau ?? site.domain;
+const ogUrl = new URL(ogImage, basis).href;
 ---
 <title>{title}</title>
 <meta name="description" content={description} />
@@ -32,7 +40,15 @@ const ogUrl = new URL(ogImage, site.domain).href;
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:image" content={ogUrl} />
-<meta property="og:url" content={canonical} />
+{/* Masse gelten fuer public/og-image.jpg (1200 x 630). Ohne Masse bauen
+    Facebook und WhatsApp die erste Vorschau manchmal ohne Bild. */}
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={site.ogBildAlt} />
+{/* Auf der Vorschau zeigt auch diese Adresse dorthin, sonst schickt ein
+    geteilter Link auf die Kundendomain, wo noch die alte Seite steht. Das
+    canonical bleibt davon unberuehrt, es gehoert der Suche. */}
+<meta property="og:url" content={site.vorschau ? new URL(new URL(canonical).pathname, site.vorschau).href : canonical} />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="de_DE" />
 <meta property="og:site_name" content={site.name} />

@@ -1,0 +1,91 @@
+---
+/**
+ * Rechtstext.astro — Impressum oder Datenschutzerklaerung von easyRechtssicher
+ * (@portawerk/rechtstexte), Vorlage HGS Becker.
+ *
+ * Im Betrieb setzt worker/index.ts zwischen die beiden Marken die Fassung, die
+ * der Zeitplan taeglich holt. Gebaut wird mit der Notfall-Fassung aus
+ * src/inhalte/rechtstexte/<art>.html (`npm run rechtstexte`).
+ *
+ * Fehlt die Datei (Pitch, Schluessel noch nicht da), bricht der Bau nicht ab,
+ * warnt aber laut. Dann steht der Ersatz aus der Seite da. Das genuegt fuer
+ * die Vorschau, NICHT fuer den Livegang.
+ */
+import { mitMarken } from '@portawerk/rechtstexte';
+
+interface Props {
+  art: 'impressum' | 'datenschutz';
+  /** HTML, falls noch keine Notfall-Fassung gebaut ist. Nur Werte aus site.ts. */
+  ersatz: string;
+}
+
+const { art, ersatz } = Astro.props;
+
+const dateien = import.meta.glob<string>('../inhalte/rechtstexte/*.html', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+const gebaut = dateien[`../inhalte/rechtstexte/${art}.html`];
+
+if (!gebaut) {
+  console.warn(
+    `[rechtstexte] src/inhalte/rechtstexte/${art}.html fehlt, gebaut wird der Ersatz aus site.ts. Vor dem Livegang \`npm run rechtstexte\` ausfuehren.`,
+  );
+}
+---
+{/* Text von easyRechtssicher, Wortlaut nicht aendern (Haftung) */}
+<div class="rechtstext">
+  <Fragment set:html={mitMarken(gebaut ?? ersatz)} />
+</div>
+
+<style>
+  /* Der Rechtstext kommt als HTML (set:html), scoped styles brauchen deshalb :global */
+  .rechtstext :global(h2) {
+    font-size: var(--fs-h3);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-sm);
+  }
+
+  .rechtstext :global(h3),
+  .rechtstext :global(h4) {
+    font-size: var(--fs-body);
+    font-weight: 700;
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-xs);
+  }
+
+  .rechtstext :global(p),
+  .rechtstext :global(li) {
+    color: var(--c-text-muted);
+    line-height: var(--lh-relaxed);
+  }
+
+  .rechtstext :global(p) { margin-bottom: var(--space-md); }
+
+  .rechtstext :global(ul),
+  .rechtstext :global(ol) {
+    margin: 0 0 var(--space-md) 1.25em;
+    list-style: disc;
+  }
+
+  .rechtstext :global(a) {
+    color: var(--c-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+  }
+
+  .rechtstext :global(a:hover) { color: var(--c-primary-light); }
+
+  /* easyRechtssicher liefert Telefon und E-Mail als Paare in eigenen divs,
+     getrennt durch ein <br>. Als zweispaltiges Raster stehen "Telefon:" und
+     Nummer wieder in einer Zeile. */
+  .rechtstext :global(.formatted_table) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.5em;
+    margin-bottom: var(--space-md);
+  }
+  .rechtstext :global(.formatted_table br) { display: none; }
+</style>

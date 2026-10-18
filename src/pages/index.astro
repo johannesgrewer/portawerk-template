@@ -10,7 +10,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ContactForm from '../components/ContactForm.astro';
-import Section from '../components/Section.astro';
 import { site } from '../config/site';
 ---
 <BaseLayout
@@ -24,18 +23,22 @@ import { site } from '../config/site';
          Frei gebaut pro Kunde. Extraktion in die Bibliothek erst
          nach der Drittel-Regel. Das Folgende ist nur Platzhalter.
          ══════════════════════════════════════════════════════════ -->
-    <Section id="start">
-      <p class="badge">PortaWerk Starter-Fundament</p>
-      <h1>{site.name}</h1>
-      <p>{site.slogan}</p>
-      <a href={site.cta.href} class="btn btn-primary">{site.cta.label}</a>
-    </Section>
+    <section class="section" id="start">
+      <div class="container">
+        <p class="badge">PortaWerk Starter-Fundament</p>
+        <h1>{site.name}</h1>
+        <p>{site.slogan}</p>
+        <a href={site.cta.href} class="btn btn-primary">{site.cta.label}</a>
+      </div>
+    </section>
 
-    <Section background="surface" id="kontakt">
-      <h2>Kontakt</h2>
-      <p>Platzhalter-Kontaktsektion mit dem gehaerteten Anfrageformular.</p>
-      <ContactForm />
-    </Section>
+    <section class="section bg-surface" id="kontakt">
+      <div class="container">
+        <h2>Kontakt</h2>
+        <p>Platzhalter-Kontaktsektion mit dem gehärteten Anfrageformular.</p>
+        <ContactForm />
+      </div>
+    </section>
   </main>
   <Footer />
 </BaseLayout>

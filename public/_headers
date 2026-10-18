@@ -1,6 +1,6 @@
 # Security Headers + CSP fuer die DATEIEN, die am Worker vorbeigehen
 # (/_astro, /fonts, /images, siehe run_worker_first in wrangler.jsonc).
-# Seiten laufen durch den Worker und bekommen ihre Header aus
+# Seiten und /api laufen durch den Worker und bekommen ihre Header aus
 # src/config/sicherheit.ts. Beide Stellen gleich halten.
 
 /*
@@ -11,20 +11,51 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
-# ── Pro Projekt ergaenzen ──────────────────────────────────────────────
-# 1) Kontaktformular: laeuft ab sofort als /api/kontakt IM SELBEN Worker.
-#    Gleiche Origin => 'self' deckt connect-src und form-action bereits ab,
-#    hier ist nichts nachzutragen. Nur falls doch ein externer Endpoint
-#    genutzt wird, dessen Origin an connect-src UND form-action anhaengen.
+# ── Zwischenspeicher (Vorlage HGS Becker, Launch-Check 17.10.2026) ──────
+# Ohne diese Bloecke steht dort max-age=0, jeder Besuch fragt jede Datei neu
+# ab. /_astro/* traegt den Hash im Namen und wird von Cloudflare ohnehin
+# lange gehalten.
 #
-# 2) Nur wenn TwoClickEmbed genutzt wird, die Embed-Hosts ergaenzen:
+# Schriften aendern sich praktisch nie: ein Jahr, unveraenderlich. Wird ein
+# Schnitt getauscht, bekommt er einen neuen Dateinamen.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Bilder: Dateiname bleibt bei einer Aenderung oft gleich. Deshalb nur eine
+# Woche, danach im Hintergrund nachgeladen.
+/images/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Icons, Vorschaubild und Manifest liegen im Wurzelordner und laufen laut
+# run_worker_first durch den Worker. Ob _headers dort greift, nach dem
+# Deploy mit curl -sI pruefen.
+/favicon.ico
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/icon-192.png
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/icon-512.png
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/og-image.jpg
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/site.webmanifest
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# ── Pro Projekt ergaenzen ──────────────────────────────────────────────
+# 1) Nur wenn TwoClickEmbed genutzt wird, die Embed-Hosts ergaenzen, HIER
+#    UND in src/config/sicherheit.ts:
 #    Google Maps:  frame-src https://www.google.com ;  img-src ... https://maps.gstatic.com
 #    YouTube:      frame-src https://www.youtube-nocookie.com
-
-# 3) Pitch-Vorschau: Die PortaWerk-Leiste laedt leiste.js UND leiste.css von
-#    cockpit.portawerk.de und meldet Klicks dorthin. Es braucht also alle drei
-#    Direktiven, style-src wird leicht vergessen. Dann laedt die Leiste
-#    ungestylt und sagt es nur in der Browserkonsole:
+#
+# 2) Pitch-Vorschau: Die PortaWerk-Leiste laedt leiste.js UND leiste.css von
+#    cockpit.portawerk.de und meldet Klicks dorthin. Es braucht alle drei
+#    Direktiven (in sicherheit.ts, die Seiten laufen durch den Worker):
 #      script-src ... https://cockpit.portawerk.de
 #      style-src  ... https://cockpit.portawerk.de
 #      connect-src ... https://cockpit.portawerk.de

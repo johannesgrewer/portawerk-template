@@ -1,51 +1,93 @@
 {
-  // Cloudflare Worker mit Static Assets. Loest Cloudflare Pages ab, weil Pages
-  // bei Cloudflare nur noch gepflegt und nicht mehr weiterentwickelt wird.
+  // Cloudflare Worker mit Static Assets (nicht Cloudflare Pages, Pages wird
+  // von Cloudflare nur noch gepflegt). Muster Ordnung Trier, ohne Astro-Adapter.
   //
-  // PRO KUNDE ANPASSEN: "name" auf <projekt-slug>-preview setzen und die Route
-  // auf die Vorschau-Subdomain. Nie ein nacktes *.workers.dev verlinken.
+  // PRO KUNDE ANPASSEN: "projekt-slug" in name und Route ersetzen (Vorschau-Subdomain,
+  // gleich site.vorschau). Nie ein nacktes *.workers.dev verlinken.
   //
   // VORAUSSETZUNG: Die Domain muss als Zone bei Cloudflare liegen. Fuer die
   // Vorschau ist das portawerk.de, fuer den Livegang die Kundendomain. Liegt
-  // die Kundendomain zwingend bei einem Fremdanbieter, geht Workers NICHT,
-  // dann bleibt nur Cloudflare Pages.
+  // die Kundendomain zwingend bei einem Fremdanbieter: www per Custom Hostname
+  // ueber Cloudflare for SaaS (globale CLAUDE.md, Punkt 0).
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "[projekt-slug]-preview",
+  "name": "projekt-slug-preview",
   "compatibility_date": "2026-07-27",
 
-  // Eigener Einstieg: liefert dist/ aus, setzt Sicherheits-Header und zaehlt
-  // Seitenaufrufe serverseitig (@portawerk/messung). Siehe worker/index.ts.
+  // Eigener Einstieg: Formular, Rechtstexte, Sicherheits-Header, Zaehlung.
   "main": "./worker/index.ts",
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    // Seiten laufen zuerst durch den Worker (Zaehlung, Header), die
-    // Dateiordner aus dist/ nicht. Ordner je Projekt aus dist/ ablesen.
-    // Fuer sie gilt public/_headers.
+    // Seiten und /api laufen zuerst durch den Worker, die Dateiordner aus
+    // dist/ nicht (spart Aufrufe, fuer sie gilt public/_headers). Ordner je
+    // Projekt aus dist/ ablesen.
     "run_worker_first": ["/*", "!/_astro/*", "!/fonts/*", "!/images/*"]
   },
   "routes": [
-    { "pattern": "[projekt].portawerk.de", "custom_domain": true }
+    { "pattern": "projekt-slug.portawerk.de", "custom_domain": true }
   ],
+  // Die Seite darf nicht zusaetzlich unter *.workers.dev stehen (doppelter Inhalt).
+  "workers_dev": false,
+  "preview_urls": false,
   "observability": {
     "enabled": true
   }
 
-  // ── Kontaktformular (erst im Build, nicht im Pitch) ──────────────────
-  // Das Formular gehoert in DENSELBEN Worker, nicht in einen zweiten daneben.
-  // Gleiche Origin heisst: die CSP in public/_headers braucht keine fremde
-  // Origin in connect-src und form-action. Genau das wurde frueher regelmaessig
-  // vergessen, und dann scheitert der Formularversand still.
+  // ════════════════════════════════════════════════════════════════════
+  // VORBEREITET. Im Pitch bleibt alles hier unten aus. Beim Build bzw.
+  // Livegang den jeweiligen Block oben vor die schliessende Klammer
+  // ziehen (Komma nicht vergessen). worker/index.ts prueft jede Bindung
+  // und laeuft ohne sie weiter.
+  // ════════════════════════════════════════════════════════════════════
   //
-  // Dafuer in worker/index.ts /api/kontakt vor der Asset-Auslieferung
-  // beantworten (@portawerk/forms), Vorbild HGS Becker. run_worker_first
-  // deckt /api/* mit "/*" bereits ab.
-  //
-  // Achtung: Header aus public/_headers gelten NICHT fuer Antworten, die der
-  // Worker selbst erzeugt. Security-Header dort im Code setzen.
-  //
-  // Secrets nie in diese Datei, sondern:
+  // ── 1. Kontaktformular (Build) ─────────────────────────────────────
+  // Keine Geheimnisse, stehen bewusst offen, damit man im Pull Request
+  // sieht, wohin ein Formular schreibt. ALLOWED_ORIGIN = Adresse, von der
+  // die Seite gerade laeuft (Vorschau, beim Livegang die Kundendomain).
+  //   "vars": {
+  //     "CONTACT_TO_EMAIL": "info@[kunde].de",
+  //     "CONTACT_FROM_EMAIL": "formular@[kunde].de",
+  //     "ALLOWED_ORIGIN": "https://projekt-slug.portawerk.de"
+  //   },
+  // Rate-Limit ueber die Bindung statt KV (kostenlos, kein Schreibkontingent).
+  // namespace_id je Konto eindeutig waehlen.
+  //   "ratelimits": [
+  //     { "name": "FORM_RATE_LIMIT", "namespace_id": "2001", "simple": { "limit": 3, "period": 60 } },
+  //     { "name": "CANARY_RATE_LIMIT", "namespace_id": "2002", "simple": { "limit": 10, "period": 60 } }
+  //   ],
+  // Ergebnisprotokoll (nur Zaehler), eigener Durable Object, nie ein KV.
+  //   "durable_objects": {
+  //     "bindings": [{ "name": "FORM_PROTOKOLL", "class_name": "FormularProtokoll" }]
+  //   },
+  //   "migrations": [{ "tag": "formular-protokoll-v1", "new_sqlite_classes": ["FormularProtokoll"] }],
+  // Secrets:
   //   printf '%s' "$KEY" | npx wrangler secret put BREVO_API_KEY
-  //   printf '%s' "$KEY" | npx wrangler secret put PIRSCH_ZUGANG   (erst beim Livegang)
+  //   printf '%s' "$KEY" | npx wrangler secret put TURNSTILE_SECRET_KEY   (erst nach dem Site-Key in site.ts)
+  //   printf '%s' "$KEY" | npx wrangler secret put CANARY_TOKEN           (fuer den Host abgeleitet, /portawerk-build Phase 4)
+  //   printf '%s' "$KEY" | npx wrangler secret put CANARY_TO_EMAIL
+  //
+  // ── 2. Rechtstexte (Livegang, /portawerk-deliver Phase 2) ───────────
+  // KV-Namensraum anlegen (npx wrangler kv namespace create RECHTSTEXTE),
+  // nur fuer die Rechtstexte, nie mit etwas anderem teilen.
+  //   "kv_namespaces": [{ "binding": "RECHTSTEXTE", "id": "[id]" }],
+  // Einmal taeglich holen (UTC). Crons brauchen eine workers.dev-Subdomain
+  // am Konto, die Seite selbst bleibt dort trotzdem aus (workers_dev: false).
+  //   "triggers": { "crons": ["17 3 * * *"] },
+  //   printf '%s' "$KEY" | npx wrangler secret put ERS_API_KEY
+  //
+  // ── 3. Kundendomain (Livegang) ──────────────────────────────────────
+  // Routen ersetzen, account_id des Kundenkontos eintragen, in
+  // worker/index.ts HAUPT_HOST und ZAEHL_HOSTS fuellen.
+  //   "account_id": "[kunden-account-id]",
+  //   "routes": [
+  //     { "pattern": "[kunde].de", "custom_domain": true },
+  //     { "pattern": "www.[kunde].de", "custom_domain": true }
+  //   ],
+  //   printf '%s' "$KEY" | npx wrangler secret put PIRSCH_ZUGANG
+  //   printf '%s' "$KEY" | npx wrangler secret put CANARY_TOKEN   (fuer die Kundendomain neu abgeleitet)
+  //
+  // ── Erweiterung: Astro-Adapter (nur wenn Astro selbst rendern muss) ──
+  // Etwa fuer live abgerufene Google-Bewertungen. Muster HGS Becker,
+  // Anleitung in CLAUDE.md. Nicht ungefragt einbauen.
 }

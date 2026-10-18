@@ -4,16 +4,22 @@ node_modules/
 # Build
 dist/
 .astro/
+.wrangler/
 
-# Env
+# Env und Schluessel
 .env
 .env.*
 !.env.example
+*.key
+*.pem
+pb_data/
+
+# Interne Kundenakte, geht nie ins Repo (globale CLAUDE.md)
+kunde.md
 
 # System
 .DS_Store
 Thumbs.db
-
 
 # Ressourcen (Rohdateien vom Kunden — nur lokal)
 resources/

@@ -17,11 +17,12 @@ html {
   scroll-behavior: smooth;
   overscroll-behavior-y: none;
   -webkit-text-size-adjust: 100%;
-}
-
-section[id] {
-  /* etwas mehr als die Kopfzeile, damit die Ueberschrift nicht daran klebt */
-  scroll-margin-top: calc(var(--header-h, 64px) + 16px);
+  /* Anker und fokussierte Elemente landen unter der klebenden Kopfzeile,
+     nicht dahinter (WCAG 2.4.11). scroll-padding statt scroll-margin an
+     section[id]: gilt auch fuer Fokus beim Tabben, nicht nur fuer Anker.
+     Mit einer festen Leiste unten (Telefonleiste) zusaetzlich
+     scroll-padding-bottom in deren Hoehe setzen. */
+  scroll-padding-top: calc(var(--header-h, 64px) + 16px);
 }
 
 body {
@@ -162,8 +163,11 @@ p, li, dd, figcaption, blockquote, summary {
   border-width: 0;
 }
 
+/* Fokusrahmen in Textfarbe statt Akzent: Ein heller Akzent kam bei HGS auf
+   hellem Grund nur auf 2,3:1, noetig sind 3:1 (WCAG 1.4.11). Auf dunklen
+   Flaechen den Rahmen dort hell ueberschreiben. */
 :focus-visible {
-  outline: 3px solid var(--c-primary-light);
+  outline: 3px solid var(--c-text);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -204,15 +208,6 @@ p, li, dd, figcaption, blockquote, summary {
   .js .animate-on-scroll { opacity: 1; transform: none; transition: none; }
   html { scroll-behavior: auto; }
 }
-
-/* ══════════════════════════ FAQ ACCORDION ══════════════════════════ */
-
-.faq-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s var(--ease-out);
-}
-.faq-content.open { max-height: 500px; }
 
 /* ══════════════════════════ CARD HOVER ══════════════════════════ */
 

@@ -1,13 +1,27 @@
 ---
 /**
- * ContactForm.astro — Frontend des Anfrageformulars.
- * Postet an den gehaerteten Form-Worker (blocks/form-worker). Die echte
- * Absicherung sitzt im Worker; hier: Honeypot, Zeitstempel, HTML-Validierung,
- * Datenschutz-Pflichthaken, Inline-Feedback.
+ * ContactForm.astro — Frontend des Anfrageformulars (Vorlage HGS Becker).
+ *
+ * Postet als FormData an /api/kontakt im selben Worker (worker/index.ts,
+ * @portawerk/forms, Versand ueber Brevo). Die echte Absicherung sitzt dort:
+ * Herkunft, Groesse, Rate-Limit, Honeypot, Zeitpruefung, Turnstile, Felder.
+ * Hier nur, was der Browser beitragen muss:
+ *   - Feldnamen laut Vertrag des Pakets (name, email, telefon, subject,
+ *     message, privacy)
+ *   - Honeypot `pw_kontrolle`, fuer Menschen unsichtbar. Nie company/Firma/
+ *     website o. ae.: das fuellt die Ausfuellhilfe, dann verschwinden echte
+ *     Anfragen still (Vorfall HGS Becker, 16.10.2026). Die data-Attribute
+ *     halten 1Password, LastPass, Bitwarden und Proton Pass fern.
+ *   - `_t` = Millisekunden seit Seitenaufruf beim Absenden. OHNE DIESES FELD
+ *     kommt mit der Zeitpruefung im Worker jede Anfrage als "[Spamverdacht]"
+ *     an (Starter bis 18.10.2026).
+ *   - Turnstile-Widget, sobald site.turnstileSiteKey gesetzt ist. Das Skript
+ *     laedt verzoegert (TurnstileNachladen.astro).
  */
 import { site } from '../config/site';
+import TurnstileNachladen from './TurnstileNachladen.astro';
 
-interface Field { name: string; label: string; type?: string; required?: boolean; }
+interface Field { name: string; label: string; type?: string; required?: boolean; autocomplete?: string; }
 interface Props {
   endpoint?: string;
   fields?: Field[];
@@ -19,22 +33,26 @@ interface Props {
 const {
   endpoint = site.contactEndpoint,
   fields = [
-    { name: 'name', label: 'Name', type: 'text', required: true },
-    { name: 'email', label: 'E-Mail', type: 'email', required: true },
-    { name: 'telefon', label: 'Telefon', type: 'tel', required: false },
+    { name: 'name', label: 'Name', type: 'text', required: true, autocomplete: 'name' },
+    { name: 'email', label: 'E-Mail', type: 'email', required: true, autocomplete: 'email' },
+    { name: 'telefon', label: 'Telefon', type: 'tel', required: false, autocomplete: 'tel' },
     { name: 'message', label: 'Nachricht', type: 'textarea', required: true },
   ],
   subjectOptions,
-  successRedirect = '/danke',
-  privacyHref = '/datenschutz',
+  successRedirect = '/danke/',
+  privacyHref = '/datenschutz/',
 } = Astro.props;
 
 // Turnstile-Widget nur rendern, wenn ein Site-Key hinterlegt ist.
 const turnstileKey = site.turnstileSiteKey?.trim() || '';
 ---
 <form class="pw-form" action={endpoint} method="POST" data-success={successRedirect} novalidate>
+  {/* Legende zum Stern. Fuer die Sprachausgabe ausgeblendet: Dort meldet das
+      Attribut required die Pflicht schon je Feld. */}
+  <p class="pw-pflicht" aria-hidden="true"><span class="pw-req">*</span> Pflichtfeld</p>
+
   {subjectOptions && (
-    <div class="pw-field">
+    <div class="pw-field" data-feld="subject">
       <label for="pw-subject">Betreff</label>
       <select id="pw-subject" name="subject">
         {subjectOptions.map((o) => <option value={o}>{o}</option>)}
@@ -43,56 +61,57 @@ const turnstileKey = site.turnstileSiteKey?.trim() || '';
   )}
 
   {fields.map((f) => (
-    <div class="pw-field">
+    <div class="pw-field" data-feld={f.name}>
       <label for={`pw-${f.name}`}>
         {f.label}{f.required && <span class="pw-req" aria-hidden="true"> *</span>}
       </label>
       {f.type === 'textarea' ? (
-        <textarea id={`pw-${f.name}`} name={f.name} required={f.required} rows="5"></textarea>
+        <textarea id={`pw-${f.name}`} name={f.name} required={f.required} rows="5" minlength="5" maxlength="5000"></textarea>
       ) : (
         <input
           id={`pw-${f.name}`}
           name={f.name}
           type={f.type ?? 'text'}
           required={f.required}
-          autocomplete="on"
+          autocomplete={f.autocomplete ?? 'on'}
+          maxlength={f.name === 'email' ? 150 : 100}
         />
       )}
     </div>
   ))}
 
-  {/* Honeypot — fuer Menschen unsichtbar (Feldname laut Worker-Vertrag: pw_kontrolle).
-      Nie company/Firma/website o. ae.: das fuellt die Ausfuellhilfe, dann
-      verschwinden echte Anfragen still (Vorfall HGS Becker, 16.10.2026). */}
   <div class="pw-hp" aria-hidden="true">
     <label for="pw-kontrolle">Bitte leer lassen</label>
     <input id="pw-kontrolle" name="pw_kontrolle" type="text" tabindex="-1" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore data-protonpass-ignore data-form-type="other" />
   </div>
+  <input type="hidden" name="_t" value="" />
 
-  <div class="pw-field pw-consent-check">
+  <div class="pw-field pw-consent-check" data-feld="privacy">
     <label>
-      <input type="checkbox" name="privacy" required />
-      <span>Ich habe die <a href={privacyHref}>Datenschutzerklaerung</a> gelesen und stimme der Verarbeitung meiner Daten zu.</span>
+      <input type="checkbox" name="privacy" value="1" required />
+      <span>Ich habe die <a href={privacyHref}>Datenschutzerklärung</a> gelesen. Meine Angaben werden nur zur Bearbeitung der Anfrage verwendet.</span>
     </label>
   </div>
 
+  {/* Hell, nicht "auto": auto folgt dem Betriebssystem, nicht der Seite, und
+      setzt sonst ein dunkles Widget auf eine helle Seite. Groesse setzt
+      TurnstileNachladen je nach Platz. */}
   {turnstileKey && (
-    <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="auto"></div>
+    <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="light" data-language="de"></div>
   )}
 
   <button type="submit" class="btn btn-primary pw-submit">Anfrage senden</button>
   <p class="pw-form-status" role="status" aria-live="polite"></p>
 </form>
 
-{turnstileKey && (
-  <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
-)}
+{turnstileKey && <TurnstileNachladen />}
 
 <style>
   .pw-form { display: flex; flex-direction: column; gap: var(--space-md); max-width: 640px; }
   .pw-field { display: flex; flex-direction: column; gap: 0.4rem; }
   .pw-field label { font-size: var(--fs-small); font-weight: 600; color: var(--c-text); }
-  .pw-req { color: var(--c-accent); }
+  .pw-req { color: var(--c-accent-text); }
+  .pw-pflicht { margin: 0; font-size: var(--fs-xs); color: var(--c-text-muted); }
   .pw-field input,
   .pw-field textarea,
   .pw-field select {
@@ -102,16 +121,29 @@ const turnstileKey = site.turnstileSiteKey?.trim() || '';
     min-height: 48px;
     border: 1px solid var(--c-border);
     border-radius: var(--radius-md);
-    background: var(--c-white);
+    /* Nicht --c-white: die Schriftfarbe kommt aus --c-text, und in einem
+       dunklen Theme steht dann fast weisser Text auf weissem Grund. --c-bg
+       traegt in beiden Themes. */
+    background: var(--c-bg);
     color: var(--c-text);
     width: 100%;
+    transition: border-color var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
   }
+  .pw-field input:hover,
+  .pw-field textarea:hover,
+  .pw-field select:hover { border-color: var(--c-text-muted); }
   .pw-field textarea { min-height: 120px; resize: vertical; }
   .pw-field input:focus, .pw-field textarea:focus, .pw-field select:focus {
     outline: none;
     border-color: var(--c-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-primary) 20%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-primary) 24%, transparent);
   }
+
+  /* Vom Server beanstandete Felder (Antwort `fields`). */
+  .pw-field.ist-fehler input,
+  .pw-field.ist-fehler textarea,
+  .pw-field.ist-fehler select { border-color: var(--c-accent); border-width: 2px; }
 
   /* Honeypot komplett aus dem Blickfeld */
   .pw-hp {
@@ -131,53 +163,106 @@ const turnstileKey = site.turnstileSiteKey?.trim() || '';
     color: var(--c-text-muted);
     line-height: var(--lh-snug);
   }
-  .pw-consent-check input { min-height: auto; width: auto; margin-top: 0.2rem; }
-  .pw-consent-check a { color: var(--c-primary); text-decoration: underline; }
+  .pw-consent-check input { min-height: auto; width: auto; margin-top: 0.2rem; accent-color: var(--c-accent); }
+  .pw-consent-check a { color: var(--c-text); text-decoration: underline; text-underline-offset: 3px; }
+  .pw-consent-check a:hover { color: var(--c-accent-text); }
+  .pw-consent-check.ist-fehler label { color: var(--c-text); }
 
   .pw-submit { align-self: flex-start; }
-  .pw-submit[disabled] { opacity: 0.6; cursor: progress; }
+  .pw-submit[disabled] { opacity: 0.6; cursor: progress; transform: none; }
 
-  .pw-form-status { font-size: var(--fs-small); min-height: 1.2em; }
-  .pw-form-status.is-error { color: var(--c-accent); }
-  .pw-form-status.is-ok { color: var(--c-primary); }
+  .pw-form-status { font-size: var(--fs-small); min-height: 1.2em; margin: 0; color: var(--c-text); }
+  .pw-form-status.is-error {
+    padding-left: var(--space-sm);
+    border-left: 3px solid var(--c-accent);
+  }
+
+  @media (max-width: 639px) {
+    .pw-submit { align-self: stretch; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pw-field input, .pw-field textarea, .pw-field select { transition: none; }
+  }
 </style>
 
 <script>
+  type Antwort = { ok?: boolean; error?: string; fields?: string[] };
+
+  const TEXT_NETZ = 'Keine Verbindung. Bitte prüfen Sie Ihre Internetverbindung oder rufen Sie uns an.';
+  const TEXT_ALLGEMEIN = 'Das hat leider nicht geklappt. Bitte versuchen Sie es später erneut oder rufen Sie uns an.';
+
   document.querySelectorAll<HTMLFormElement>('.pw-form').forEach((form) => {
     const status = form.querySelector<HTMLElement>('.pw-form-status');
     const submit = form.querySelector<HTMLButtonElement>('.pw-submit');
-    const success = form.dataset.success || '/danke';
+    const zeit = form.querySelector<HTMLInputElement>('input[name="_t"]');
+    const success = form.dataset.success || '/danke/';
 
-    const setStatus = (msg: string, kind: '' | 'ok' | 'error') => {
+    const setStatus = (msg: string, kind: '' | 'error') => {
       if (!status) return;
       status.textContent = msg;
       status.classList.toggle('is-error', kind === 'error');
-      status.classList.toggle('is-ok', kind === 'ok');
+    };
+
+    // Klasse fuer die Optik, aria-invalid fuer die Sprachausgabe: Sonst
+    // erfaehrt ein Screenreader nicht, welches Feld der Server bemaengelt.
+    const fehlerMarkieren = (felder: string[] = []) => {
+      form.querySelectorAll<HTMLElement>('[data-feld]').forEach((feld) => {
+        const fehlerhaft = felder.includes(feld.dataset.feld ?? '');
+        feld.classList.toggle('ist-fehler', fehlerhaft);
+        feld.querySelectorAll('input, textarea, select').forEach((eingabe) => {
+          if (fehlerhaft) eingabe.setAttribute('aria-invalid', 'true');
+          else eingabe.removeAttribute('aria-invalid');
+        });
+      });
+    };
+
+    // Turnstile-Token gilt nur einmal. Nach einem Fehlversuch neu holen,
+    // sonst scheitert der zweite Versuch am Bot-Schutz.
+    const turnstileZuruecksetzen = () => {
+      const turnstile = (window as unknown as { turnstile?: { reset: (el?: Element) => void } }).turnstile;
+      const widget = form.querySelector('.cf-turnstile');
+      if (turnstile && widget) {
+        try { turnstile.reset(widget); } catch { /* Widget nicht bereit, beim naechsten Laden neu */ }
+      }
+    };
+
+    const fehlschlag = (msg: string, felder?: string[]) => {
+      fehlerMarkieren(felder);
+      setStatus(msg, 'error');
+      submit?.removeAttribute('disabled');
+      turnstileZuruecksetzen();
     };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!form.reportValidity()) return;
 
+      if (zeit) zeit.value = String(Math.round(performance.now()));
       submit?.setAttribute('disabled', 'true');
+      fehlerMarkieren();
       setStatus('Wird gesendet …', '');
 
+      let res: Response;
       try {
-        const res = await fetch(form.action, {
+        res = await fetch(form.action, {
           method: 'POST',
           headers: { Accept: 'application/json' },
           body: new FormData(form),
         });
-        if (res.ok) {
-          window.location.href = success;
-        } else {
-          setStatus('Das hat leider nicht geklappt. Bitte spaeter erneut versuchen oder direkt anrufen.', 'error');
-          submit?.removeAttribute('disabled');
-        }
       } catch {
-        setStatus('Keine Verbindung. Bitte pruefen Sie Ihre Internetverbindung.', 'error');
-        submit?.removeAttribute('disabled');
+        fehlschlag(TEXT_NETZ);
+        return;
       }
+
+      let antwort: Antwort = {};
+      try { antwort = await res.json(); } catch { /* keine JSON-Antwort, allgemeiner Text */ }
+
+      if (res.ok && antwort.ok !== false) {
+        window.location.href = success;
+        return;
+      }
+      fehlschlag(antwort.error || TEXT_ALLGEMEIN, antwort.fields);
     });
   });
 </script>

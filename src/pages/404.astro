@@ -8,11 +8,12 @@ import { site } from '../config/site';
   title={`Seite nicht gefunden | ${site.name}`}
   description="Die angeforderte Seite existiert nicht."
   noindex={true}
+  brotkrumen={false}
 >
   <Header />
   <main id="main-content" class="error-page">
     <div class="error-content">
-      <span class="error-code">404</span>
+      <span class="error-code" aria-hidden="true">404</span>
       <h1 class="error-headline">Seite nicht gefunden.</h1>
       <p class="error-text">Die Seite, die Sie suchen, existiert nicht oder wurde verschoben.</p>
       <a href="/" class="btn btn-primary">
