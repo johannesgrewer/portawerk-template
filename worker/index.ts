@@ -84,6 +84,12 @@ interface Kontext {
  *  www.kunde.de per 301 dorthin. Leer = keine Weiterleitung. */
 const HAUPT_HOST = '';
 
+/** Nur Weg B der Bauordnung (Kundendomain auf Pages): Adresse der Kundenseite,
+ *  z. B. 'https://www.kunde.de'. Dann bedient dieser Worker nur noch /api/ und
+ *  leitet alles andere per 301 dorthin, sonst stuende die Seite doppelt im Netz.
+ *  Leer = normaler Betrieb. */
+const SEITEN_ZIEL = '';
+
 /** TODO(Livegang): Kundendomain eintragen, z. B. ['kunde.de']. */
 const ZAEHL_HOSTS = new Set<string>([]);
 
@@ -144,6 +150,11 @@ export default {
         { waitUntil: (arbeit) => ctx.waitUntil(arbeit) },
       );
       return mitApiHeadern(antwort);
+    }
+
+    // Weg B: Die Seiten liegen auf Pages, hier bleibt nur die API.
+    if (SEITEN_ZIEL && !adresse.pathname.startsWith('/api/')) {
+      return Response.redirect(`${SEITEN_ZIEL}${adresse.pathname}${adresse.search}`, 301);
     }
 
     // 4. Impressum, Datenschutz, /api/rechtstexte/stand. Liest nur aus dem
