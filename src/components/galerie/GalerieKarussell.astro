@@ -1,0 +1,400 @@
+---
+/**
+ * GalerieKarussell.astro — Rundgang zum Durchblaettern statt als Raster.
+ *
+ * Die Bilder liegen in einer waagerechten Bahn und rutschen beim Weiterklicken
+ * von rechts herein. Weil immer nur eines im Mittelpunkt steht, darf es
+ * deutlich groesser sein als eine Rasterkachel.
+ *
+ * Umgesetzt mit CSS Scroll Snap, nicht mit einer JS-Transform-Bahn. Grund:
+ * Wischen, Tastatur, Scrollrad und das Anspringen einzelner Bilder erledigt
+ * der Browser dann von selbst und ruckelfrei. Ohne JS bleibt es eine
+ * wischbare Bahn, nur die Pfeile und Punkte fehlen.
+ *
+ * Das naechste Bild ist bewusst angeschnitten sichtbar. Ohne diesen
+ * Ueberstand sieht ein Karussell aus wie ein einzelnes Bild, und niemand
+ * ahnt, dass es weitergeht.
+ */
+import { Image } from 'astro:assets';
+import { ChevronLeft, ChevronRight, Expand } from '@lucide/astro';
+import type { ImageMetadata } from 'astro';
+
+interface Eintrag {
+  bild: ImageMetadata;
+  alt: string;
+  /** Fertige URL der grossen Fassung fuer die Lightbox. */
+  gross: string;
+}
+
+interface Props {
+  bilder: Eintrag[];
+  /** Trennt die Lightbox-Strecke von der des Rasters. */
+  gruppe?: string;
+}
+
+const { bilder, gruppe = 'karussell' } = Astro.props;
+---
+<div class="kr" data-karussell>
+  <div class="kr__buehne">
+    <ul class="kr__bahn" data-kr-bahn tabindex="0" aria-label="Bildstrecke, waagerecht scrollbar">
+      {bilder.map((eintrag, index) => (
+        <li class="kr__folie" data-kr-folie>
+          <a href={eintrag.gross} data-lightbox={gruppe}>
+            <Image
+              src={eintrag.bild}
+              alt={eintrag.alt}
+              {/* Groesser als im Raster: die Folie nimmt je nach Breite 68
+                  bis 88 Prozent des Containers ein. */}
+              widths={[700, 1000, 1400]}
+              width={1400}
+              sizes="(min-width: 1000px) 68vw, 88vw"
+              quality={74}
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+            <span class="kr__lupe" aria-hidden="true">
+              <Expand size={20} stroke-width={1.75} />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    {/* Die Pfeile liegen ueber der Bahn. Ohne JS waeren sie wirkungslos,
+        deshalb setzt das Skript hidden erst ab. */}
+    <button class="kr__pfeil kr__pfeil--zurueck" type="button" data-kr-zurueck hidden aria-label="Vorheriges Bild">
+      <ChevronLeft size={26} stroke-width={1.75} aria-hidden="true" />
+    </button>
+    <button class="kr__pfeil kr__pfeil--vor" type="button" data-kr-vor hidden aria-label="Nächstes Bild">
+      <ChevronRight size={26} stroke-width={1.75} aria-hidden="true" />
+    </button>
+  </div>
+
+  <div class="kr__fuss">
+    <p class="kr__text" data-kr-text aria-live="polite"></p>
+    <p class="kr__zaehler" data-kr-zaehler></p>
+  </div>
+</div>
+
+<style>
+  .kr__buehne { position: relative; }
+
+  .kr__bahn {
+    list-style: none;
+    display: flex;
+    gap: var(--space-md);
+    overflow-x: auto;
+    /* KEIN scroll-snap-type und KEIN scroll-behavior im CSS.
+       Beides hat sich als unvereinbar mit den Pfeiltasten erwiesen: bei
+       "mandatory" zieht Chromium jeden programmatischen Sprung sofort auf
+       den alten Snap-Punkt zurueck, auch ein hart gesetztes scrollLeft.
+       Das Einrasten nach dem Wischen macht deshalb das Skript selbst -
+       eine Zeile mehr, dafuer verhalten sich Wischen und Pfeile gleich.
+       Ohne JS bleibt es eine normal scrollbare Bahn, nur ohne Einrasten. */
+    /* Die Systemleiste wuerde unter den Bildern mitlaufen. Gefuehrt wird
+       ueber Pfeile, Wischen und Tastatur. */
+    scrollbar-width: none;
+  }
+  .kr__bahn::-webkit-scrollbar { display: none; }
+
+  /* Freiraum vor dem ersten und hinter dem letzten Bild, damit auch die
+     beiden Randfolien mittig einrasten koennen.
+     Bewusst als Flex-Spacer und NICHT als padding-inline der Bahn: ein
+     prozentuales padding bezieht sich auf den umgebenden Block, ein
+     prozentuales flex-basis dagegen auf die Content-Box des Flex-Containers.
+     Mit padding standen Folienbreite und Randabstand also auf zwei
+     verschiedenen Grundlagen - der Abstand war zu klein, die erste Folie
+     konnte ihren Snap-Punkt nie erreichen (er lag im Negativen), und jeder
+     zweite Klick auf "weiter" verpuffte. Als Spacer geht die Rechnung
+     16 + 68 + 16 = 100 Prozent exakt auf. */
+  .kr__bahn::before,
+  .kr__bahn::after {
+    content: '';
+    flex: 0 0 calc((100% - var(--folie)) / 2);
+  }
+  .kr__bahn:focus-visible {
+    outline: 2px solid var(--c-accent-text);
+    outline-offset: 4px;
+  }
+
+  .kr {
+    /* Breite einer Folie. Steht hier, weil die Bahn sie fuer ihren
+       Innenabstand braucht und CSS-Variablen nur nach unten vererben. */
+    --folie: 88%;
+  }
+
+  .kr__folie {
+    flex: 0 0 var(--folie);
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--c-border);
+  }
+  .kr__folie:has(a:focus-visible) {
+    outline: 2px solid var(--c-accent-text);
+    outline-offset: 3px;
+  }
+
+  .kr__folie a { display: block; position: relative; }
+
+  .kr__folie :global(img) {
+    width: 100%;
+    /* 3:2 statt 4:3 wie im Raster: in der Breite gibt es hier genug Platz,
+       das flachere Format wirkt ruhiger. */
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Bilder ausserhalb der Mitte treten zurueck. Das lenkt den Blick auf das
+     aktive Bild, ohne dass der Nachbar verschwindet. */
+  .kr__folie {
+    transition: opacity var(--duration-normal) var(--ease-smooth);
+  }
+  :global(html.js) .kr__folie:not(.is-aktiv) { opacity: 0.42; }
+
+  .kr__lupe {
+    position: absolute;
+    right: var(--space-sm);
+    bottom: var(--space-sm);
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: rgba(26, 23, 20, 0.55);
+    backdrop-filter: blur(4px);
+    color: var(--c-white);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-smooth),
+                transform var(--duration-normal) var(--ease-smooth);
+  }
+  .kr__folie a:hover .kr__lupe,
+  .kr__folie a:focus-visible .kr__lupe { opacity: 1; transform: none; }
+  @media (hover: none) {
+    .kr__lupe { opacity: 1; transform: none; }
+  }
+
+  /* ── Pfeile ── */
+  .kr__pfeil {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-full);
+    background: var(--c-white);
+    color: var(--c-text);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: box-shadow var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth);
+  }
+  .kr__pfeil[hidden] { display: none; }
+  /* Hover = Mehr. Weiss laesst sich nicht aufhellen, also mehr Praesenz. */
+  .kr__pfeil:hover { border-color: var(--c-text-muted); box-shadow: var(--shadow-lg); }
+  .kr__pfeil:active { transform: translateY(-50%) scale(0.94); }
+  .kr__pfeil:focus-visible {
+    outline: 2px solid var(--c-accent-text);
+    outline-offset: 3px;
+  }
+  .kr__pfeil[disabled] { opacity: 0.3; cursor: default; box-shadow: var(--shadow-sm); }
+  .kr__pfeil[disabled]:hover { border-color: var(--c-border); box-shadow: var(--shadow-sm); }
+
+  /* Halb ueber der Bildkante: innen verdecken sie das Motiv, ganz aussen
+     stehen sie im Nichts. */
+  .kr__pfeil--zurueck { left: calc((100% - var(--folie)) / 2 - 24px); }
+  .kr__pfeil--vor { right: calc((100% - var(--folie)) / 2 - 24px); }
+
+  /* ── Fuss ── */
+  .kr__fuss {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+    padding-inline: calc((100% - var(--folie)) / 2);
+  }
+
+  .kr__text {
+    font-size: var(--fs-small);
+    color: var(--c-text-muted);
+    line-height: var(--lh-normal);
+    margin: 0;
+    max-width: 60ch;
+    /* Platz fuer zwei Zeilen reservieren. Die Alt-Texte sind unterschiedlich
+       lang - ohne diese Reserve wechselt der Fuss beim Blaettern zwischen
+       ein- und zweizeilig, und das ganze Karussell zuckt (gemessen: 26 auf
+       51 Pixel und zurueck). */
+    min-height: calc(var(--lh-normal) * 2em);
+  }
+
+  .kr__zaehler {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-text-muted);
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  @media (min-width: 700px) {
+    .kr { --folie: 76%; }
+  }
+  @media (min-width: 1000px) {
+    .kr { --folie: 68%; }
+  }
+
+  /* Auf schmalen Schirmen wuerden die Pfeile ueber dem Bild liegen und mit
+     dem Wischen konkurrieren. Dort fuehrt die Gestik. */
+  @media (max-width: 699px) {
+    .kr__pfeil { display: none; }
+    .kr__fuss { flex-direction: column; align-items: flex-start; gap: var(--space-xs); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kr__bahn { scroll-behavior: auto; }
+    .kr__folie { transition: none; }
+    :global(html.js) .kr__folie:not(.is-aktiv) { opacity: 1; }
+  }
+</style>
+
+<script>
+  /**
+   * Pfeile, Zaehler und Bildtext zum Karussell. Das Scrollen selbst macht der
+   * Browser - hier wird nur angestossen und ausgelesen, welche Folie mittig
+   * steht. Faellt das Skript aus, bleibt die Bahn wischbar.
+   */
+  document.querySelectorAll<HTMLElement>('[data-karussell]').forEach((kasten) => {
+    const bahn = kasten.querySelector<HTMLElement>('[data-kr-bahn]');
+    const folien = Array.from(kasten.querySelectorAll<HTMLElement>('[data-kr-folie]'));
+    const zurueck = kasten.querySelector<HTMLButtonElement>('[data-kr-zurueck]');
+    const vor = kasten.querySelector<HTMLButtonElement>('[data-kr-vor]');
+    const zaehler = kasten.querySelector<HTMLElement>('[data-kr-zaehler]');
+    const text = kasten.querySelector<HTMLElement>('[data-kr-text]');
+
+    if (!bahn || folien.length === 0) return;
+
+    /**
+     * Position der Folie in der Scroll-Bahn. offsetLeft bezieht sich auf das
+     * naechste positionierte Elternteil (.kr__buehne), scrollLeft auf die
+     * Bahn - die Differenz rechnet beide auf dieselbe Basis.
+     */
+    const versatz = (folie: HTMLElement) => folie.offsetLeft - bahn.offsetLeft;
+
+    /**
+     * Welche Folie steht mittig? Wird aus der tatsaechlichen Scroll-Position
+     * gerechnet und NICHT in einer Variable mitgefuehrt.
+     *
+     * Der Grund: Ein Klick auf "weiter" muss von dort aus zaehlen, wo die
+     * Bahn wirklich steht. Ein mitgefuehrter Index wird erst nach dem
+     * Scrollen aktualisiert - klickt man schneller als die Animation, setzt
+     * die naechste Bewegung auf einem veralteten Wert auf und das Karussell
+     * laeuft aus dem Tritt, bis es kurz vor dem Ende haengen bleibt.
+     */
+    const zentrale = () => {
+      const mitte = bahn.scrollLeft + bahn.clientWidth / 2;
+      let beste = 0;
+      let kleinsteDistanz = Infinity;
+      folien.forEach((folie, index) => {
+        const distanz = Math.abs(versatz(folie) + folie.clientWidth / 2 - mitte);
+        if (distanz < kleinsteDistanz) {
+          kleinsteDistanz = distanz;
+          beste = index;
+        }
+      });
+      return beste;
+    };
+
+    /** Ohne Argument wird die mittige Folie gemessen, mit Argument gesetzt. */
+    const beschriften = (vorgabe?: number) => {
+      const index = vorgabe ?? zentrale();
+      if (zaehler) zaehler.textContent = `${index + 1} / ${folien.length}`;
+      if (text) text.textContent = folien[index]?.querySelector('img')?.alt ?? '';
+      folien.forEach((folie, i) => folie.classList.toggle('is-aktiv', i === index));
+      if (zurueck) zurueck.disabled = index === 0;
+      if (vor) vor.disabled = index === folien.length - 1;
+    };
+
+    const sanft = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /**
+     * Absicht des Nutzers. Getrennt von der gemessenen Scroll-Position:
+     * ein Klick zaehlt von hier weiter, nicht von der Stelle, an der die
+     * Bahn gerade zufaellig steht. Sonst setzt ein zweiter Klick waehrend
+     * der laufenden Bewegung auf einem Zwischenwert auf und das Karussell
+     * kommt aus dem Tritt.
+     */
+    let ziel = 0;
+
+    const springe = (index: number) => {
+      ziel = Math.max(0, Math.min(folien.length - 1, index));
+      const folie = folien[ziel];
+      if (!folie) return;
+      // Nur die Bahn bewegen, nicht die Seite: scrollIntoView wuerde die
+      // ganze Seite mitziehen, wenn die Sektion nicht komplett sichtbar ist.
+      bahn.scrollTo({
+        left: versatz(folie) + folie.clientWidth / 2 - bahn.clientWidth / 2,
+        behavior: sanft ? 'smooth' : 'auto',
+      });
+      beschriften(ziel);
+    };
+
+    zurueck?.addEventListener('click', () => springe(ziel - 1));
+    vor?.addEventListener('click', () => springe(ziel + 1));
+
+    // Pfeile sind ohne Skript wirkungslos und stehen deshalb erst jetzt da.
+    if (zurueck) zurueck.hidden = false;
+    if (vor) vor.hidden = false;
+
+    /**
+     * Beim Scrollen nur ANZEIGEN, niemals selbst scrollen.
+     *
+     * Ein Einrasten an dieser Stelle war der zweite Anlauf und ebenfalls
+     * falsch: der Handler scrollte, das Scrollen loeste ihn erneut aus, und
+     * die Bahn sprang zurueck auf das erste Bild. Freies Wischen darf
+     * deshalb zwischen zwei Bildern stehen bleiben - der Zaehler laeuft mit,
+     * und der naechste Pfeilklick zaehlt von der gemessenen Position weiter.
+     */
+    let ruheTimer: number | undefined;
+    let laeuft = false;
+
+    bahn.addEventListener('scroll', () => {
+      // Waehrend der Bewegung mitlaufen, damit Zaehler und Text zum Bild
+      // passen, das man gerade sieht. Hoechstens einmal pro Bildaufbau.
+      if (!laeuft) {
+        laeuft = true;
+        requestAnimationFrame(() => {
+          laeuft = false;
+          beschriften();
+        });
+      }
+
+      // Sobald die Bahn zur Ruhe gekommen ist, die Absicht mit der
+      // tatsaechlichen Position abgleichen. Nur ein Wert, kein Scrollen.
+      window.clearTimeout(ruheTimer);
+      ruheTimer = window.setTimeout(() => {
+        ziel = zentrale();
+        beschriften(ziel);
+      }, 140);
+    }, { passive: true });
+
+    // Pfeiltasten, sobald die Bahn den Fokus hat.
+    bahn.addEventListener('keydown', (ereignis) => {
+      if (ereignis.key === 'ArrowRight') { ereignis.preventDefault(); springe(ziel + 1); }
+      if (ereignis.key === 'ArrowLeft') { ereignis.preventDefault(); springe(ziel - 1); }
+    });
+
+    // Die Folienbreite haengt an der Fensterbreite. Nach einer Aenderung
+    // stimmt die Rechnung sonst bis zum naechsten Scrollen nicht.
+    window.addEventListener('resize', beschriften);
+
+    beschriften();
+  });
+</script>

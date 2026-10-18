@@ -1,0 +1,116 @@
+---
+/**
+ * GalerieMauerwerk.astro — Bilder spaltenweise dicht gepackt (Masonry).
+ *
+ * Jedes Bild behaelt sein eigenes Seitenverhaeltnis, es wird nichts
+ * beschnitten. Das ist der Vorteil gegenueber dem Raster und gleichzeitig
+ * die Bedingung: bei durchweg gleichformatigen Fotos sieht das Ergebnis
+ * fast aus wie ein Raster, der Aufwand lohnt dann nicht.
+ *
+ * Umgesetzt mit CSS `columns`, nicht mit Grid-Masonry. Letzteres ist noch
+ * nicht ueberall verfuegbar. Preis der Spaltenloesung: die Bilder laufen
+ * SPALTENWEISE von oben nach unten, nicht zeilenweise - die Leserichtung
+ * stimmt also nicht mit der Reihenfolge im Quelltext ueberein. Bei einem
+ * Rundgang mit fester Dramaturgie ist das ein echter Nachteil.
+ */
+import { Image } from 'astro:assets';
+import { Expand } from '@lucide/astro';
+import type { ImageMetadata } from 'astro';
+
+interface Eintrag {
+  bild: ImageMetadata;
+  alt: string;
+  /** Fertige URL der grossen Fassung fuer die Lightbox. */
+  gross: string;
+}
+
+interface Props {
+  bilder: Eintrag[];
+  /** Trennt die Lightbox-Strecke von den anderen Galerien der Seite. */
+  gruppe?: string;
+}
+
+const { bilder, gruppe = 'mauerwerk' } = Astro.props;
+---
+<div class="mw">
+  {bilder.map((eintrag) => (
+    <figure class="mw__stein">
+      <a href={eintrag.gross} data-lightbox={gruppe}>
+        <Image
+          src={eintrag.bild}
+          alt={eintrag.alt}
+          widths={[400, 800]}
+          width={800}
+          sizes="(min-width: 1000px) 32vw, (min-width: 600px) 48vw, 92vw"
+          quality={70}
+          loading="lazy"
+        />
+        <span class="mw__lupe" aria-hidden="true">
+          <Expand size={20} stroke-width={1.75} />
+        </span>
+      </a>
+    </figure>
+  ))}
+</div>
+
+<style>
+  .mw {
+    columns: 1;
+    column-gap: var(--space-md);
+  }
+
+  .mw__stein {
+    margin: 0 0 var(--space-md);
+    /* Verhindert, dass ein Bild ueber die Spaltengrenze umbricht. */
+    break-inside: avoid;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--c-border);
+  }
+  .mw__stein:has(a:focus-visible) {
+    outline: 2px solid var(--c-accent-text);
+    outline-offset: 3px;
+  }
+
+  .mw__stein a { display: block; position: relative; }
+
+  .mw__stein :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 1.2s var(--ease-smooth);
+  }
+  .mw__stein a:hover :global(img) { transform: scale(1.04); }
+
+  .mw__lupe {
+    position: absolute;
+    right: var(--space-sm);
+    bottom: var(--space-sm);
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: rgba(26, 23, 20, 0.55);
+    backdrop-filter: blur(4px);
+    color: var(--c-white);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-smooth),
+                transform var(--duration-normal) var(--ease-smooth);
+  }
+  .mw__stein a:hover .mw__lupe,
+  .mw__stein a:focus-visible .mw__lupe { opacity: 1; transform: none; }
+  @media (hover: none) {
+    .mw__lupe { opacity: 1; transform: none; }
+  }
+
+  @media (min-width: 600px) { .mw { columns: 2; } }
+  @media (min-width: 1000px) { .mw { columns: 3; column-gap: var(--space-lg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mw__stein :global(img) { transition: none; }
+    .mw__stein a:hover :global(img) { transform: none; }
+  }
+</style>

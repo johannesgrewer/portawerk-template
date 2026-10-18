@@ -1,0 +1,257 @@
+---
+/**
+ * GalerieSticky.astro — die Bildbuehne bleibt stehen, der Text scrollt.
+ *
+ * Das Bild klebt am Fensterrand, waehrend daneben (Desktop) bzw. darunter
+ * (Handy) die Beschreibungen durchlaufen. Beim Erreichen eines Absatzes
+ * wechselt das Bild. Wirkt hochwertig und fuehrt den Blick, hat aber einen
+ * Preis: es braucht pro Bild einen Satz, und der ganze Rundgang zieht sich
+ * ueber viel Scrollweg. Bei neun Bildern ist das die laengste aller
+ * Varianten - das ist eine bewusste Entscheidung, kein Versehen.
+ *
+ * Ohne JS bleiben alle Bilder sichtbar untereinander stehen. Der Stapel, in
+ * dem nur eines zu sehen ist, wird ausschliesslich unter `html.js` gebildet -
+ * Inhalte duerfen nie allein per Skript sichtbar werden.
+ */
+import { Image } from 'astro:assets';
+import { Expand } from '@lucide/astro';
+import type { ImageMetadata } from 'astro';
+
+interface Eintrag {
+  bild: ImageMetadata;
+  alt: string;
+  gross: string;
+}
+
+interface Props {
+  bilder: Eintrag[];
+  gruppe?: string;
+}
+
+const { bilder, gruppe = 'sticky' } = Astro.props;
+---
+<div class="st" data-sticky>
+  <div class="st__spalte">
+    <div class="st__buehne">
+      <ul class="st__stapel">
+        {bilder.map((eintrag, index) => (
+          <li class:list={['st__bild', { 'is-aktiv': index === 0 }]} data-st-bild>
+            <a href={eintrag.gross} data-lightbox={gruppe}>
+              <Image
+                src={eintrag.bild}
+                alt={eintrag.alt}
+                widths={[600, 1000]}
+                width={1000}
+                sizes="(min-width: 1000px) 48vw, 92vw"
+                quality={74}
+                loading={index === 0 ? 'eager' : 'lazy'}
+              />
+              <span class="st__lupe" aria-hidden="true">
+                <Expand size={20} stroke-width={1.75} />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <ol class="st__texte">
+    {bilder.map((eintrag, index) => (
+      <li class="st__block" data-st-block>
+        <p class="st__nummer">{String(index + 1).padStart(2, '0')}</p>
+        <p class="st__satz">{eintrag.alt}</p>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  /* Bis Tablet BLOCK, nicht Grid: ein sticky Element klebt nur innerhalb
+     seines Elternteils. Im Blockfluss ist das der ganze Kasten samt Texten,
+     die Buehne hat dadurch Klebeweg. */
+  .st { display: block; }
+
+  /* Die Buehne klebt am oberen Rand. 84px Abstand: der Kopf ist 64 hoch,
+     dazu etwas Luft, sonst schiebt sich das Bild darunter.
+
+     WICHTIG: sticky sitzt auf der SPALTE, nicht auf .st__buehne darin.
+     Vorher stand es am Kind, und weil `align-items: start` das Grid-Item nur
+     so hoch macht wie sein Inhalt, war der Klebeweg genau 0 - die Buehne
+     scrollte weg und man sah nur das erste Bild, obwohl die Bilder brav
+     durchwechselten. */
+  .st__spalte {
+    position: sticky;
+    top: 84px;
+    z-index: 1;
+    /* Nur so hoch wie das Bild. Ohne das fuellt das Item im Grid die ganze
+       Zeilenhoehe der Textspalte aus und hat wieder keinen Weg. */
+    align-self: start;
+  }
+
+  .st__stapel {
+    list-style: none;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--c-border);
+  }
+
+  /* Ohne JS stehen alle Bilder untereinander und sind alle sichtbar. */
+  .st__bild + .st__bild { margin-top: var(--space-md); }
+
+  /* Erst mit JS wird daraus ein Stapel, in dem eines gezeigt wird. */
+  :global(html.js) .st__stapel { position: relative; aspect-ratio: 3 / 2; }
+  :global(html.js) .st__bild {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity var(--duration-slow) var(--ease-smooth);
+  }
+  :global(html.js) .st__bild.is-aktiv { opacity: 1; }
+
+  .st__bild a { display: block; position: relative; height: 100%; }
+  .st__bild :global(img) {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    display: block;
+  }
+  .st__bild:has(a:focus-visible) {
+    outline: 2px solid var(--c-accent-text);
+    outline-offset: 3px;
+  }
+
+  .st__lupe {
+    position: absolute;
+    right: var(--space-sm);
+    bottom: var(--space-sm);
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: rgba(26, 23, 20, 0.55);
+    backdrop-filter: blur(4px);
+    color: var(--c-white);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-smooth),
+                transform var(--duration-normal) var(--ease-smooth);
+  }
+  .st__bild a:hover .st__lupe,
+  .st__bild a:focus-visible .st__lupe { opacity: 1; transform: none; }
+  @media (hover: none) { .st__lupe { opacity: 1; transform: none; } }
+
+  /* ── Textspalte ── */
+  .st__texte { list-style: none; counter-reset: none; }
+
+  .st__block {
+    /* Jeder Absatz braucht Hoehe, sonst wechseln die Bilder in einem Ruck
+       durch. Eine halbe Fensterhoehe ist der ruhigste Takt. */
+    min-height: 52vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: var(--space-lg);
+  }
+
+  .st__nummer {
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-accent-text);
+    margin-bottom: var(--space-xs);
+  }
+
+  .st__satz {
+    font-size: var(--fs-h4);
+    font-weight: 400;
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+    max-width: 34ch;
+    text-wrap: balance;
+  }
+
+  /* Nicht aktive Absaetze treten zurueck, damit klar ist, welcher Text zum
+     Bild gehoert. */
+  :global(html.js) .st__block {
+    opacity: 0.32;
+    transition: opacity var(--duration-normal) var(--ease-smooth);
+  }
+  :global(html.js) .st__block.is-aktiv { opacity: 1; }
+
+  @media (min-width: 1000px) {
+    .st {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-2xl);
+      /* KEIN align-items: start hier - das wuerde die Zeilenhoehe nicht mehr
+         von der Textspalte aufspannen lassen. Die Bildspalte regelt ihre
+         eigene Ausrichtung ueber align-self. */
+    }
+    /* Bild links, Text rechts. Die Bildspalte ist der klebende Teil. */
+    .st__spalte { grid-column: 1; }
+    .st__texte { grid-column: 2; }
+  }
+
+  /* Auf dem Handy klebt die Buehne oben und ist flacher, damit darunter noch
+     Text zu sehen ist. */
+  @media (max-width: 999px) {
+    :global(html.js) .st__stapel { aspect-ratio: 4 / 3; }
+    .st__spalte { top: 76px; margin-bottom: var(--space-lg); }
+    .st__block { min-height: 42vh; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js) .st__bild,
+    :global(html.js) .st__block { transition: none; }
+  }
+</style>
+
+<script>
+  /**
+   * Schaltet Bild und Absatz gemeinsam um. Ausgeloest wird ueber einen
+   * IntersectionObserver mit schmalem Sichtfenster in der Fenstermitte:
+   * damit wechselt genau der Absatz, der auf Augenhoehe steht, und nicht
+   * jeder, der irgendwo am Rand auftaucht.
+   */
+  document.querySelectorAll<HTMLElement>('[data-sticky]').forEach((kasten) => {
+    const bilder = Array.from(kasten.querySelectorAll<HTMLElement>('[data-st-bild]'));
+    const bloecke = Array.from(kasten.querySelectorAll<HTMLElement>('[data-st-block]'));
+
+    if (bilder.length === 0 || bilder.length !== bloecke.length) return;
+
+    const zeigen = (index: number) => {
+      bilder.forEach((b, i) => b.classList.toggle('is-aktiv', i === index));
+      bloecke.forEach((b, i) => b.classList.toggle('is-aktiv', i === index));
+    };
+
+    if (!('IntersectionObserver' in window)) {
+      // Ohne Observer bleibt das erste Bild stehen, alle Texte sind lesbar.
+      bloecke.forEach((b) => b.classList.add('is-aktiv'));
+      return;
+    }
+
+    const beobachter = new IntersectionObserver(
+      (eintraege) => {
+        // Den obersten Treffer nehmen: beim schnellen Scrollen melden sich
+        // mehrere Absaetze gleichzeitig.
+        const treffer = eintraege
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (!treffer) return;
+        const index = bloecke.indexOf(treffer.target as HTMLElement);
+        if (index !== -1) zeigen(index);
+      },
+      // Schmaler Streifen in der Fenstermitte als Ausloeser.
+      { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+    );
+
+    bloecke.forEach((b) => beobachter.observe(b));
+    zeigen(0);
+  });
+</script>

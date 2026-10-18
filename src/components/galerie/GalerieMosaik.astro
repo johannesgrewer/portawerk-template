@@ -1,0 +1,133 @@
+---
+/**
+ * GalerieMosaik.astro — ein Leitbild gross, die uebrigen klein daneben.
+ *
+ * Setzt eine Hierarchie: das erste Bild ist erkennbar das wichtigste. Das
+ * lohnt, wenn ein Motiv deutlich das staerkste ist - und schadet, wenn alle
+ * gleich gut sind, weil die Auswahl dann willkuerlich wirkt.
+ *
+ * Das Raster ist auf VIER Spalten gerechnet: das Leitbild belegt 2x2, die
+ * restlichen Bilder fuellen die Zeilen auf. Mit 9 Bildern (1 gross + 8
+ * klein) geht das ohne Loch auf. Bei anderer Anzahl bleibt unten
+ * gegebenenfalls eine Zelle frei - das faellt auf und ist dann ueber die
+ * Bildanzahl zu loesen, nicht ueber Zusatzregeln hier.
+ */
+import { Image } from 'astro:assets';
+import { Expand } from '@lucide/astro';
+import type { ImageMetadata } from 'astro';
+
+interface Eintrag {
+  bild: ImageMetadata;
+  alt: string;
+  gross: string;
+}
+
+interface Props {
+  bilder: Eintrag[];
+  gruppe?: string;
+}
+
+const { bilder, gruppe = 'mosaik' } = Astro.props;
+---
+<ul class="mo">
+  {bilder.map((eintrag, index) => (
+    <li class:list={['mo__zelle', { 'mo__zelle--leit': index === 0 }]}>
+      <a href={eintrag.gross} data-lightbox={gruppe}>
+        <Image
+          src={eintrag.bild}
+          alt={eintrag.alt}
+          {/* Das Leitbild wird doppelt so breit dargestellt und braucht
+              deshalb groessere Dateien als die kleinen Zellen. */}
+          widths={index === 0 ? [600, 1200] : [300, 600]}
+          width={index === 0 ? 1200 : 600}
+          sizes={index === 0
+            ? '(min-width: 900px) 50vw, 92vw'
+            : '(min-width: 900px) 25vw, 46vw'}
+          quality={index === 0 ? 74 : 68}
+          loading={index === 0 ? 'eager' : 'lazy'}
+        />
+        <span class="mo__lupe" aria-hidden="true">
+          <Expand size={20} stroke-width={1.75} />
+        </span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .mo {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+  }
+
+  .mo__zelle {
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--c-border);
+  }
+  .mo__zelle:has(a:focus-visible) {
+    outline: 2px solid var(--c-accent-text);
+    outline-offset: 3px;
+  }
+
+  .mo__zelle a { display: block; position: relative; height: 100%; }
+
+  .mo__zelle :global(img) {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+    transition: transform 1.2s var(--ease-smooth);
+  }
+  .mo__zelle a:hover :global(img) { transform: scale(1.04); }
+
+  /* Auf dem Handy laeuft das Leitbild ueber die ganze Breite und wird
+     flacher - quadratisch waere es dort ein Klotz. */
+  .mo__zelle--leit { grid-column: span 2; }
+  .mo__zelle--leit :global(img) { aspect-ratio: 3 / 2; }
+
+  .mo__lupe {
+    position: absolute;
+    right: var(--space-sm);
+    bottom: var(--space-sm);
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: rgba(26, 23, 20, 0.55);
+    backdrop-filter: blur(4px);
+    color: var(--c-white);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-smooth),
+                transform var(--duration-normal) var(--ease-smooth);
+  }
+  .mo__zelle a:hover .mo__lupe,
+  .mo__zelle a:focus-visible .mo__lupe { opacity: 1; transform: none; }
+  @media (hover: none) {
+    .mo__lupe { opacity: 1; transform: none; }
+  }
+
+  @media (min-width: 900px) {
+    .mo {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-lg);
+    }
+    /* Erst hier wird das Leitbild wirklich zum Leitbild: 2x2 Zellen. */
+    .mo__zelle--leit {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+    .mo__zelle--leit :global(img) { aspect-ratio: 1 / 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mo__zelle :global(img) { transition: none; }
+    .mo__zelle a:hover :global(img) { transform: none; }
+  }
+</style>

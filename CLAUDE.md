@@ -64,6 +64,7 @@ Cloudflare Worker mit Static Assets (`wrangler.jsonc`), **nicht** Cloudflare Pag
 - `worker/index.ts` — Worker-Einstieg: Auslieferung, Sicherheits-Header, Pirsch-Zählung (später `/api/kontakt`)
 - `src/config/sicherheit.ts` — Security-Header + CSP für alles, was durch den Worker geht
 - `src/components/` — Fundament-Komponenten (Header, Footer, Section, ContactForm, …)
+- `src/components/galerie/` — sechs austauschbare Galerie-Varianten plus Lightbox (optional, pro Projekt eine wählen, Rest löschen; Anleitung im README dort)
 - `wrangler.jsonc` — Deploy-Konfiguration, enthält die Anleitung für `/api/kontakt`
 - `public/_headers` — Security-Header + CSP für die Dateiordner am Worker vorbei
 - `public/fonts/` — self-hosted woff2

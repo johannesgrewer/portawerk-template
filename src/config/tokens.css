@@ -45,6 +45,7 @@
   --c-primary-light: #2E5A8F; /* heller, u.a. Button-Hover */
   --c-accent:        #C2410C; /* CTA, kontrastreich (weisser Text ~5:1) */
   --c-accent-hover:  #9A3412; /* satter Akzent-Zustand */
+  --c-accent-text:   var(--c-accent); /* Akzent als Schrift/Fokusring auf hellem Grund; bei hellem Akzent dunkler setzen */
   --c-bg:            #FCFBF9; /* Seitenhintergrund */
   --c-surface:       #F4F1EC; /* Card-Hintergrund */
   --c-surface-alt:   #E9E4DB; /* etwas dunkler als surface */
