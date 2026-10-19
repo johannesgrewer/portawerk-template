@@ -62,14 +62,24 @@ export function mitApiHeadern(antwort: Response): Response {
 }
 
 /**
- * Ergaenzt fehlende Sicherheits-Header. Was eine Antwort selbst setzt, bleibt.
+ * Header, die der Worker immer ueberschreibt. Die Asset-Auslieferung haengt
+ * die Regel "/*" aus public/_headers auch an Seiten an. Deren CSP kennt
+ * cockpit.portawerk.de nicht, die Pitch-Leiste wurde blockiert
+ * (Mathecoach, 19.10.2026). Fuer Seiten gilt deshalb immer diese Datei.
+ * X-Robots-Tag: damit der noindex der Pitch-Vorschau sicher ankommt.
+ */
+const IMMER_SETZEN = new Set(['Content-Security-Policy', 'X-Robots-Tag']);
+
+/**
+ * Ergaenzt fehlende Sicherheits-Header. Was eine Antwort selbst setzt, bleibt,
+ * ausser bei IMMER_SETZEN.
  * Umpacken statt direkt schreiben: Antworten aus der Asset-Auslieferung tragen
  * festgeschriebene Kopfzeilen ("Can't modify immutable headers").
  */
 export function mitSicherheitsHeadern(antwort: Response): Response {
   const kopf = new Headers(antwort.headers);
   for (const [name, wert] of Object.entries(SICHERHEITS_HEADER)) {
-    if (!kopf.has(name)) kopf.set(name, wert);
+    if (IMMER_SETZEN.has(name) || !kopf.has(name)) kopf.set(name, wert);
   }
   return new Response(antwort.body, {
     status: antwort.status,
