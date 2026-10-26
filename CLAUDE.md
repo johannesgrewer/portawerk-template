@@ -98,6 +98,8 @@ Cloudflare Worker mit Static Assets (`wrangler.jsonc`), **nicht** Cloudflare Pag
 ## Optional: Editor bei Übergabe
 Wählt der Kunde nach dem Livegang die Übergabe, bekommt er den Editor zum Selbstpflegen (Pages CMS auf seinem Repo, 250 € netto einmalig, seit 14.10.2026 Standard). Feste Felder wie Öffnungszeiten, Aktuelles, Texte, Bilder. Impressum und Datenschutz bleiben gesperrt. `@portawerk/cms` ist seit 18.10.2026 eingefroren und kommt nicht mehr in neue Projekte.
 
+**Einbau aus dem Toolkit-Baustein `00_Toolkit/blocks/pages-cms/`** (seit 26.10.2026, aus Dockner): `.pages.yml`-Vorlage mit zugeklappten Listen und sprechenden Titeln, Urlaub und Abwesenheit als Liste mit Fenster zum Wegklicken, Aktuelles als Zeile unter dem Hero plus Karten, Prüfung auf sich überschneidende Abwesenheiten im Auslieferlauf. Anleitung und Fallen im README dort. `src/inhalte/oeffnungszeiten.json` passt schon zum Editor.
+
 ## Offene Punkte (pro Fork)
 - [ ] Versions-Check: `npm view astro version` gegen `package.json` halten
 - [ ] `config/tokens.css`: `@font-face` aktivieren + Kundenfarben statt Default-Theme
