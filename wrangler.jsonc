@@ -76,6 +76,15 @@
   //   "triggers": { "crons": ["17 3 * * *"] },
   //   printf '%s' "$KEY" | npx wrangler secret put ERS_API_KEY
   //
+  // ── 2b. Instagram-Feed (Option, Checkliste im README von @portawerk/instagram)
+  // Eigener KV-Namensraum (npx wrangler kv namespace create INSTAGRAM), als
+  // zweiter Eintrag neben RECHTSTEXTE. Braucht den Zeitplan oben, sonst laeuft
+  // das Token nach 60 Tagen ohne Besucher ab.
+  //   { "binding": "INSTAGRAM", "id": "[id]" }
+  //   printf '%s' "$KEY" | npx wrangler secret put IG_APP_ID
+  //   printf '%s' "$KEY" | npx wrangler secret put IG_APP_SECRET
+  //   printf '%s' "$KEY" | npx wrangler secret put IG_VERBINDEN_GEHEIMNIS   (nach dem Verbinden: secret delete)
+  //
   // ── 3. Kundendomain (Livegang) ──────────────────────────────────────
   // Routen ersetzen, account_id des Kundenkontos eintragen, in
   // worker/index.ts HAUPT_HOST und ZAEHL_HOSTS fuellen.

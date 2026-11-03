@@ -8,9 +8,12 @@
  *                              Meldung "Vorschau", die das Formular anzeigt.
  *   4. Impressum/Datenschutz -> @portawerk/rechtstexte, nur wenn die KV-Bindung
  *                              RECHTSTEXTE da ist. Sonst die gebaute Fassung.
- *   5. alles andere         -> statische Seiten aus dist/ + Sicherheits-Header
- *   6. Pirsch               nur auf ZAEHL_HOSTS (im Pitch leer, die Vorschau zaehlt nie)
+ *   5. /api/instagram*      -> @portawerk/instagram, nur wenn die KV-Bindung
+ *                              INSTAGRAM da ist (Option, Checkliste im README)
+ *   6. alles andere         -> statische Seiten aus dist/ + Sicherheits-Header
+ *   7. Pirsch               nur auf ZAEHL_HOSTS (im Pitch leer, die Vorschau zaehlt nie)
  * Zeitplan: Rechtstexte taeglich holen, nur mit Bindung und ERS_API_KEY.
+ *           Instagram-Token und Feed pflegen, nur mit Bindung INSTAGRAM.
  *
  * Im Pitch tut der Worker nur 2, 5 und die Vorschau-Meldung in 3. Beim Build
  * und Livegang wird nichts mehr gebaut, sondern eingeschaltet: Bindungen in
@@ -35,6 +38,7 @@ import type { RateLimiter } from '@portawerk/forms/types';
 export { FormularProtokoll } from '@portawerk/forms';
 import { handleRechtstexte, rechtstexteAktualisieren } from '@portawerk/rechtstexte';
 import { ereignisMelden, seitenaufrufMelden, trafficAdvice } from '@portawerk/messung';
+import { handleInstagram, instagramPflegen } from '@portawerk/instagram';
 import rechtstexteConfig from '../rechtstexte.config.mjs';
 import { mitApiHeadern, mitSicherheitsHeadern } from '../src/config/sicherheit';
 import { site } from '../src/config/site';
@@ -42,6 +46,7 @@ import { site } from '../src/config/site';
 interface KvSpeicher {
   get(schluessel: string): Promise<string | null>;
   put(schluessel: string, wert: string): Promise<void>;
+  delete(schluessel: string): Promise<void>;
 }
 
 interface Env {
@@ -71,6 +76,14 @@ interface Env {
   RECHTSTEXTE?: KvSpeicher;
   /** Schluessel der easyRechtssicher-Lizenz. Secret. */
   ERS_API_KEY?: string;
+
+  /** Instagram-Feed (Option): Token und letzter Stand (KV, nur dafuer). */
+  INSTAGRAM?: KvSpeicher;
+  /** App "PortaWerk Website-Feed", Werte in ~/.claude/secrets/portawerk-instagram-app.env. Secrets. */
+  IG_APP_ID?: string;
+  IG_APP_SECRET?: string;
+  /** Gesetzt = Anmeldeweg /api/instagram-verbinden offen. Nach dem Verbinden loeschen. Secret. */
+  IG_VERBINDEN_GEHEIMNIS?: string;
 
   /** Pirsch Access Key der Kundendomain. Secret. Fehlt er, wird nichts gezaehlt. */
   PIRSCH_ZUGANG?: string;
@@ -163,10 +176,21 @@ export default {
       ? await handleRechtstexte(anfrage, { assets: env.ASSETS, speicher: env.RECHTSTEXTE })
       : null;
 
-    // 5. Alles andere: statische Seiten.
+    // 5. Instagram-Feed, Bilder ueber die eigene Domain, Anmeldeweg.
+    if (!rechtstext && env.INSTAGRAM) {
+      const instagram = await handleInstagram(anfrage, {
+        speicher: env.INSTAGRAM,
+        appId: env.IG_APP_ID,
+        appSecret: env.IG_APP_SECRET,
+        verbindenGeheimnis: env.IG_VERBINDEN_GEHEIMNIS,
+      });
+      if (instagram) return mitSicherheitsHeadern(instagram);
+    }
+
+    // 6. Alles andere: statische Seiten.
     const antwort = mitSicherheitsHeadern(rechtstext ?? (await env.ASSETS.fetch(anfrage)));
 
-    // 6. Laeuft nach der Antwort weiter, der Besucher wartet nie auf Pirsch.
+    // 7. Laeuft nach der Antwort weiter, der Besucher wartet nie auf Pirsch.
     if (ZAEHL_HOSTS.has(adresse.hostname)) {
       ctx.waitUntil(
         seitenaufrufMelden(anfrage, antwort, { zugang: env.PIRSCH_ZUGANG }).catch((fehler) => {
@@ -177,8 +201,12 @@ export default {
     return antwort;
   },
 
-  /** Zeitplan aus wrangler.jsonc (triggers.crons): Rechtstexte aktualisieren. */
+  /** Zeitplan aus wrangler.jsonc (triggers.crons): Rechtstexte und Instagram. */
   async scheduled(_ereignis: unknown, env: Env, ctx: Kontext): Promise<void> {
+    // Ohne Zeitplan liefe das Instagram-Token nach 60 Tagen ohne Besucher ab,
+    // der Feed wird nur im Browser geladen.
+    if (env.INSTAGRAM) ctx.waitUntil(instagramPflegen({ speicher: env.INSTAGRAM }));
+
     if (!env.RECHTSTEXTE || !env.ERS_API_KEY) {
       console.warn('[rechtstexte] Zeitplan ohne RECHTSTEXTE-Bindung oder ERS_API_KEY, nichts geholt');
       return;
