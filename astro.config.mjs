@@ -4,6 +4,12 @@ import sitemap from '@astrojs/sitemap';
 import { site as kunde } from './src/config/site.ts';
 
 // Seiten mit noindex: feste Seiten plus alle Kurzlinks aus site.ts.
+// Tweakbar: Design-Panel nur im Dev-Server (`npm run dev`, Alt+T). Wird bei
+// `astro build` gar nicht erst geladen, siehe tweakbar/integration.mjs.
+const tweakbar = process.argv.includes('dev')
+  ? [(await import('./tweakbar/integration.mjs')).default()]
+  : [];
+
 const NOINDEX = ['impressum', 'datenschutz', 'danke', ...(kunde.kurzlinks ?? []).map((k) => k.pfad.replace(/^\/+|\/+$/g, ''))];
 
 // Statisches Astro, deployt als Cloudflare Worker mit Static Assets (siehe
@@ -16,6 +22,7 @@ export default defineConfig({
   output: 'static',
 
   integrations: [
+    ...tweakbar,
     sitemap({
       // Datum des Baus, also des Deploys. Genauer geht es ohne CMS nicht.
       lastmod: new Date(),

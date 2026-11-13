@@ -26,3 +26,7 @@ resources/
 
 # Screenshots
 screenshots/
+
+# Tweakbar (nur lokal): Sicherung von tokens.css und Uebergabeliste fuer Claude
+*.bak-tweakbar
+tweakbar-aenderungen.md
