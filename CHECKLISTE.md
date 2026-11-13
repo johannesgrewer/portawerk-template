@@ -29,6 +29,7 @@ Vor jedem Deploy durchgehen. **Rot** = Blocker (muss), **Gelb** = sollte, **Weis
 
 - [ ] Cookie-Hinweis nur, falls wirklich einwilligungspflichtige Dienste dazukommen (Baustein: `00_Toolkit/blocks/cookie-consent/`)
 - [ ] Social-Links im Footer (`showSocials`)
+- [ ] Instagram-Feed (`@portawerk/instagram`, im Worker vorbereitet): Kunde hat ein Business- oder Creator-Konto, Rücksprungadresse in der Meta-App eingetragen, KV `INSTAGRAM` und Zeitplan aktiv, nach dem Verbinden `IG_VERBINDEN_GEHEIMNIS` gelöscht. Ablauf im README des Pakets
 - [ ] Zusaetzliche SEO-Landingpage (eigenes Zusatzprodukt, Anti-Doorway-Regeln in `references/portawerk-google-regelwerk` Abschnitt 1)
 
 ---
